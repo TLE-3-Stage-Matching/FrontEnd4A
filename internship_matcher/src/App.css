@@ -66,8 +66,8 @@
 /* --- Danger Button for Profile Deletion --- */
 .btn-danger {
     color: #fff;
-    background-color: #DC3545;
-    border-color: #DC3545;
+    background-color: #B02A37; /* Darker red for better contrast */
+    border-color: #B02A37;
     padding: 0.75rem 1.5rem;
     border-radius: 0.5rem;
     cursor: pointer;
@@ -75,6 +75,6 @@
 }
 
 .btn-danger:hover {
-    background-color: #C82333;
-    border-color: #BD2130;
+    background-color: #94242f;
+    border-color: #88212b;
 }

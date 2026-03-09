@@ -1,29 +1,34 @@
-// It's giving main character energy, now with Edit Mode.
+// It's giving main character energy, now with Edit Mode, Accessibility & Logging.
 import React, {useState, useEffect, useContext} from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
 import {AppContext} from '../context/AppContext';
-import '../components/CreateVacancy.css'; // Assuming this CSS file still exists and is relevant
+import '../components/CreateVacancy.css';
 
-// A cute little toggle component. It knows its job. It's giving "switch realness".
+// An ACCESSIBLE toggle component. We love an inclusive queen.
 const SkillToggle = ({type, onToggle}) => (
-    <div className="toggle-container" onClick={onToggle}>
-        <div className={`toggle-label ${type === 'must' ? 'active' : ''}`}>Must</div>
+    <button
+        type="button"
+        role="switch"
+        aria-checked={type === 'nice'}
+        onClick={onToggle}
+        className="toggle-container"
+    >
+        <span className={`toggle-label ${type === 'must' ? 'active' : ''}`} aria-hidden="true">Must</span>
         <div className={`toggle-switch ${type === 'nice' ? 'toggled' : ''}`}>
             <div className="toggle-handle"></div>
         </div>
-        <div className={`toggle-label ${type === 'nice' ? 'active' : ''}`}>Nice</div>
-    </div>
+        <span className={`toggle-label ${type === 'nice' ? 'active' : ''}`} aria-hidden="true">Nice</span>
+    </button>
 );
 
 const CreateVacancy = () => {
     // --- HOOKS & CONTEXT ---
     const {vacancies, addVacancy, updateVacancy} = useContext(AppContext);
     const navigate = useNavigate();
-    const {id} = useParams(); // Gets the ':id' from the URL.
-
+    const {id} = useParams();
     const isEditMode = Boolean(id);
 
-    // --- STATE MANAGEMENT ---
+    // --- STATE ---
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [skills, setSkills] = useState([]);
@@ -31,23 +36,21 @@ const CreateVacancy = () => {
     const [nextSkillId, setNextSkillId] = useState(1);
 
     // --- EFFECTS ---
-    // This useEffect is the stylist. It dresses the component for its role: create or edit.
     useEffect(() => {
         if (isEditMode) {
+            console.log(`Vacature bewerken pagina ingeladen voor vacature ID: ${id}!`);
             const vacancyToEdit = vacancies.find(v => v.id === parseInt(id));
             if (vacancyToEdit) {
-                // Pre-fill the form with the data of the vacancy to be edited.
                 setTitle(vacancyToEdit.title);
                 setDescription(vacancyToEdit.description || '');
                 setSkills(vacancyToEdit.skills || []);
-                // Ensure nextSkillId is higher than any existing skill id
                 const maxId = vacancyToEdit.skills.reduce((max, s) => s.id > max ? s.id : max, 0);
                 setNextSkillId(maxId + 1);
             }
+        } else {
+            console.log('Nieuwe vacature pagina ingeladen!');
         }
-        // If not in edit mode, the default empty state is already set.
     }, [id, isEditMode, vacancies]);
-
 
     // --- HANDLERS ---
     const handleAddSkill = () => {
@@ -55,6 +58,7 @@ const CreateVacancy = () => {
             setCurrentSkill('');
             return;
         }
+        console.log(`Gedrukt op: Voeg skill toe: "${currentSkill.trim()}"`);
         const newSkill = {id: nextSkillId, name: currentSkill.trim(), type: 'must'};
         setSkills([...skills, newSkill]);
         setNextSkillId(nextSkillId + 1);
@@ -68,30 +72,33 @@ const CreateVacancy = () => {
         }
     };
 
-    const handleRemoveSkill = (idToRemove) => {
+    const handleRemoveSkill = (idToRemove, skillName) => {
+        console.log(`Gedrukt op: Verwijder skill "${skillName}"`);
         setSkills(skills.filter(skill => skill.id !== idToRemove));
     };
 
-    const handleToggleSkillType = (idToToggle) => {
-        setSkills(skills.map(skill =>
-            skill.id === idToToggle
-                ? {...skill, type: skill.type === 'must' ? 'nice' : 'must'}
-                : skill
-        ));
+    const handleToggleSkillType = (idToToggle, skillName) => {
+        const skill = skills.find(s => s.id === idToToggle);
+        if (skill) {
+            const newType = skill.type === 'must' ? 'nice' : 'must';
+            console.log(`Gedrukt op: Toggle skill "${skillName}" naar "${newType}"`);
+            setSkills(skills.map(s => s.id === idToToggle ? {...s, type: newType} : s));
+        }
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        console.log('Gedrukt op: Formulier opslaan/plaatsen');
         const vacancyData = {title, description, skills};
         if (isEditMode) {
             updateVacancy({...vacancyData, id: parseInt(id)});
         } else {
             addVacancy(vacancyData);
         }
-        // After submit, navigate back to the dashboard. And... scene.
         navigate('/dashboard/bedrijf');
     };
 
+    // --- RENDER ---
     const renderSkillList = (type) => {
         return skills
             .filter(skill => skill.type === type)
@@ -99,19 +106,21 @@ const CreateVacancy = () => {
                 <li key={skill.id} className="skill-pill">
                     <span className="skill-name">{skill.name}</span>
                     <div className="skill-controls">
-                        <SkillToggle type={skill.type} onToggle={() => handleToggleSkillType(skill.id)}/>
-                        <button onClick={() => handleRemoveSkill(skill.id)}
-                                className="remove-skill-btn">&times;</button>
+                        <SkillToggle type={skill.type} onToggle={() => handleToggleSkillType(skill.id, skill.name)}/>
+                        <button onClick={() => handleRemoveSkill(skill.id, skill.name)} className="remove-skill-btn"
+                                aria-label={`Remove ${skill.name}`}>&times;</button>
                     </div>
                 </li>
             ));
     };
 
-    // --- RENDER ---
     return (
         <div className="create-vacancy-container">
             <div className="vacancy-form-header">
-                <button onClick={() => navigate('/companydashboard')} className="btn-link back-to-dash-btn">
+                <button onClick={() => {
+                    console.log('Gedrukt op: Terug naar dashboard');
+                    navigate('/dashboard/bedrijf');
+                }} className="btn-link back-to-dash-btn">
                     &larr; Terug naar dashboard
                 </button>
                 <h1>{isEditMode ? 'Vacature Bewerken' : 'Nieuwe Vacature'}</h1>
@@ -121,24 +130,30 @@ const CreateVacancy = () => {
                 <div className="form-section">
                     <h2>Basisinformatie</h2>
                     <div className="form-group">
-                        <label>Titel</label>
-                        <input type="text" value={title} onChange={(e) => setTitle(e.target.value)}
-                               placeholder="e.g., Frontend Developer Stagiair" required/>
+                        <label htmlFor="vacancy-title">Titel</label>
+                        <input id="vacancy-title" type="text" value={title} onChange={(e) => {
+                            console.log(`Input 'Titel' veranderd naar: "${e.target.value}"`);
+                            setTitle(e.target.value);
+                        }} placeholder="e.g., Frontend Developer Stagiair" required/>
                     </div>
                     <div className="form-group">
-                        <label>Beschrijving</label>
-                        <textarea value={description} onChange={(e) => setDescription(e.target.value)}
-                                  placeholder="Vertel over de rol, de taken, het team..."></textarea>
+                        <label htmlFor="vacancy-description">Beschrijving</label>
+                        <textarea id="vacancy-description" value={description} onChange={(e) => {
+                            console.log(`Input 'Beschrijving' veranderd`);
+                            setDescription(e.target.value);
+                        }} placeholder="Vertel over de rol, de taken, het team..."></textarea>
                     </div>
                 </div>
 
                 <div className="form-section">
                     <h2>Vereiste Vaardigheden</h2>
                     <div className="form-group">
-                        <label>Nieuwe skill toevoegen</label>
+                        <label htmlFor="new-skill-input">Nieuwe skill toevoegen</label>
                         <div className="skills-input-container">
-                            <input type="text" value={currentSkill} onChange={(e) => setCurrentSkill(e.target.value)}
-                                   onKeyPress={handleKeyPress} placeholder="e.g., TypeScript"/>
+                            <input id="new-skill-input" type="text" value={currentSkill} onChange={(e) => {
+                                console.log(`Input 'Nieuwe skill' veranderd naar: "${e.target.value}"`);
+                                setCurrentSkill(e.target.value);
+                            }} onKeyPress={handleKeyPress} placeholder="e.g., TypeScript"/>
                             <button type="button" onClick={handleAddSkill}
                                     className="btn btn-secondary add-skill-btn">Voeg toe
                             </button>

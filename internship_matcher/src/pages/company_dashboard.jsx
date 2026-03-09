@@ -1,19 +1,23 @@
-// She's back and she's dynamic. We love a stateful queen.
-import React, {useState, useContext} from 'react';
+// She's back and she's dynamic. And now she's loud.
+import React, {useState, useContext, useEffect} from 'react';
 import {useNavigate, Link} from 'react-router-dom';
 import {AppContext} from '../context/AppContext';
 import '../components/companydashboard.css';
 
 const CompanyDashboard = () => {
     // --- HOOKS & CONTEXT ---
-    // Getting the tea from the context.
-    const {vacancies, deleteVacancy} = useContext(AppContext);
+    const {vacancies, deleteVacancy, logout} = useContext(AppContext);
     const navigate = useNavigate();
 
     // State for managing which actions menu is open.
     const [openMenuId, setOpenMenuId] = useState(null);
 
-    // Hardcoded stats for now, because she has other priorities.
+    // Page load log
+    useEffect(() => {
+        console.log('Bedrijf dashboard ingeladen!');
+    }, []);
+
+    // Hardcoded stats for now.
     const stats = [
         {label: 'Actieve vacatures', value: vacancies.length},
         {label: 'Totale vacatures', value: 35},
@@ -22,18 +26,27 @@ const CompanyDashboard = () => {
 
     // --- HANDLERS ---
     const handleToggleMenu = (id) => {
+        console.log(`Gedrukt op: Actie menu voor vacature ID: ${id}`);
         setOpenMenuId(openMenuId === id ? null : id);
     };
 
     const handleEdit = (id) => {
+        console.log(`Gedrukt op: Bewerken voor vacature ID: ${id}`);
         navigate(`/vacature/bewerken/${id}`);
     };
 
     const handleDelete = (id) => {
+        console.log(`Gedrukt op: Verwijderen voor vacature ID: ${id}`);
         deleteVacancy(id);
         setOpenMenuId(null); // Close the menu after deleting.
     };
 
+    const handleLogout = () => {
+        console.log('Gedrukt op: Uitloggen');
+        // The actual logout logic (which includes a confirm dialog) is in the context.
+        logout();
+    }
+    
     // --- RENDER ---
     return (
         <div className="dashboard-container">
@@ -43,12 +56,13 @@ const CompanyDashboard = () => {
                     <p>Techno Innovators BV</p>
                 </div>
                 <div className="header-actions">
-                    <Link to="/profiel" className="btn-outline">Profiel</Link>
-                    <button className="btn-logout">Uitloggen</button>
+                    {/* The Link component doesn't have a simple onClick, so we'll log on the destination page */}
+                    <Link to="/profiel" className="btn-outline"
+                          onClick={() => console.log('Gedrukt op: Profiel knop')}>Profiel</Link>
+                    <button onClick={handleLogout} className="btn-logout">Uitloggen</button>
                 </div>
             </header>
 
-            {/* Stat Cards */}
             <div className="stats-row">
                 {stats.map((stat, index) => (
                     <div className="stat-card" key={index}>
@@ -58,23 +72,29 @@ const CompanyDashboard = () => {
                 ))}
             </div>
 
-            <button className="btn-primary" onClick={() => navigate('/vacature/nieuw')}>
+            <button className="btn-primary" onClick={() => {
+                console.log('Gedrukt op: + Nieuwe vacature plaatsen');
+                navigate('/vacature/nieuw');
+            }}>
                 + NIEUWE VACATURE PLAATSEN
             </button>
 
             <h2>MIJN VACATURES</h2>
             <div className="vacancy-list">
-                {/* Now we're mapping, darling. No more hardcoded nonsense. */}
                 {vacancies.map((vacancy) => (
                     <div className="vacancy-item" key={vacancy.id}>
                         <div>
                             <h3>{vacancy.title} <span className="badge">Actief</span></h3>
                             <p>{vacancy.applications} sollicitaties | {vacancy.matches} AI Matches</p>
-                            <button className="btn-outline">BEKIJK KANDIDATEN</button>
+                            <button
+                                onClick={() => console.log(`Gedrukt op: Bekijk kandidaten voor vacature: "${vacancy.title}"`)}
+                                className="btn-outline">BEKIJK KANDIDATEN
+                            </button>
                         </div>
                         <div className="actions">
-                            <button onClick={() => handleToggleMenu(vacancy.id)} className="actions-menu-btn">
-                                &#x22EE; {/* The three vertical dots icon */}
+                            <button onClick={() => handleToggleMenu(vacancy.id)} className="actions-menu-btn"
+                                    aria-label="Open acties menu">
+                                &#x22EE;
                             </button>
                             {openMenuId === vacancy.id && (
                                 <div className="actions-menu">
@@ -86,9 +106,6 @@ const CompanyDashboard = () => {
                     </div>
                 ))}
             </div>
-
-            {/* The student section remains unbothered. */}
-            {/* ... student match overview from the original file ... */}
         </div>
     );
 };

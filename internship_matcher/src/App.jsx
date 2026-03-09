@@ -6,7 +6,7 @@ import './App.css';
 // --- Component Imports ---
 import Home from "./pages/Home.jsx";
 import Login from './components/Login';
-import RegistrationForm from './components/Student_register.jsx';
+import RegistrationForm from './pages/StudentRegister.jsx';
 import CompanyDashboard from "./pages/company_dashboard.jsx";
 import StudentDashboard from "./pages/StudentDashboard.jsx";
 import CoordinatorDashboard from "./pages/CoordinatorDashboard.jsx";
