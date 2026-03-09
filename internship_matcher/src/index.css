@@ -13,6 +13,10 @@
     -moz-osx-font-smoothing: grayscale;
 }
 
+html {
+    overflow-y: auto;
+}
+
 a {
     font-weight: 500;
     color: #646cff;
@@ -25,8 +29,6 @@ a:hover {
 
 body {
     margin: 0;
-    display: flex;
-    place-items: center;
     min-width: 320px;
     min-height: 100vh;
 }
@@ -55,4 +57,13 @@ button:hover {
 button:focus,
 button:focus-visible {
     outline: 4px auto -webkit-focus-ring-color;
+}
+
+/* NUCLEAR SCROLL FIX */
+html, body, #root {
+    overflow: visible !important;
+    overflow-x: hidden !important; /* Prevents side-to-side scrolling */
+    height: auto !important;
+    min-height: 100vh !important;
+    display: block !important;
 }
