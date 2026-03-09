@@ -1,7 +1,7 @@
 // Of course we need React, useState, and useEffect. The holy trinity of state management.
 import React, {useState, useEffect} from "react";
 // Serving looks with our custom CSS.
-import "./CreateVacancy.css";
+import "../components/CreateVacancy.css";
 
 // A cute little toggle component. It knows its job. It's giving "switch realness".
 const SkillToggle = ({type, onToggle}) => (

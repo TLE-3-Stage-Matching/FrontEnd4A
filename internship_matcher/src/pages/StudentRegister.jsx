@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import './StudentRegister.css';
+import '../components/studentregister.css';
 
 const RegistrationForm = () => {
     // Data keys zijn nu Engels voor de backend, UI blijft Nederlands
