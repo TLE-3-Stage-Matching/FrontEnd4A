@@ -1,0 +1,23 @@
+.card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: white;
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: scale(1.02); /* Subtle hover effect */
+}
+
+.match-badge {
+    background-color: #e6f7ff;
+    color: #0050b3;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+}
