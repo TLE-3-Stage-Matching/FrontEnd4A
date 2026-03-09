@@ -1,0 +1,155 @@
+html, body, #root {
+    overflow: unset;
+}
+
+.registration-container {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 20px;
+    font-family: 'Inter', sans-serif;
+    color: #333;
+}
+
+.header-section h1 {
+    font-size: 24px;
+    margin-bottom: 5px;
+}
+
+.header-section p {
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.privacy-box {
+    background-color: #f0f0f0;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    border: 1px solid #ddd;
+}
+
+.privacy-column ul {
+    list-style: disc;
+    padding-left: 20px;
+    margin-top: 10px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-row {
+    display: flex;
+    gap: 20px;
+}
+
+label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+input[type="text"], input[type="file"], select {
+    width: 100%;
+    padding: 12px;
+    background-color: #eeeeee;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+.tag-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.skill-tag {
+    background: white;
+    border: 1px solid #999;
+    padding: 6px 15px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.education-item {
+    background: white;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.add-btn {
+    background-color: #94a3ff;
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 20px;
+}
+
+.submit-btn {
+    width: 100%;
+    background-color: #94a3ff;
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+.remove-x {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 10px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background-color: #eee;
+    color: #666;
+    font-size: 10px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.remove-x:hover {
+    background-color: #ff4d4d;
+    color: white;
+}
+
+.upload-zone {
+    border: 2px dashed #94a3ff;
+    padding: 40px 20px;
+    text-align: center;
+    border-radius: 12px;
+    background-color: #f9f9fb;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.upload-zone:hover {
+    background-color: #f0f2ff;
+    border-color: #7a8cff;
+}
+
+.upload-icon {
+    font-size: 32px;
+    margin-bottom: 5px;
+}
