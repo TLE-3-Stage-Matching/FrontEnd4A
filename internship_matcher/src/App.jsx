@@ -1,15 +1,19 @@
 import {useState} from 'react';
-import {createBrowserRouter, RouterProvider, Outlet, useNavigate, Link} from "react-router-dom";
+import {createBrowserRouter, RouterProvider, Outlet, useNavigate} from "react-router-dom";
 import {AppContext} from './context/AppContext';
-import Home from "./pages/Home.jsx";
-import CompanyDashboard from "./pages/company_dashboard.jsx";
-import CreateVacancy from "./pages/CreateVacancy.jsx";
-import Profile from "./pages/Profile.jsx"; // The new profile page
-import StudentDashboard from "./pages/StudentDashboard.jsx";
-import CoordinatorDashboard from "./pages/CoordinatorDashboard.jsx";
 import './App.css';
 
-// --- Hardcoded Data ---
+// --- Component Imports ---
+import Home from "./pages/Home.jsx";
+import Login from './components/Login';
+import RegistrationForm from './components/Student_register.jsx';
+import CompanyDashboard from "./pages/company_dashboard.jsx";
+import StudentDashboard from "./pages/StudentDashboard.jsx";
+import CoordinatorDashboard from "./pages/CoordinatorDashboard.jsx";
+import CreateVacancy from "./pages/CreateVacancy.jsx";
+import Profile from "./pages/Profile.jsx";
+
+// --- Hardcoded Initial Data ---
 const initialVacancies = [
     {
         id: 1,
@@ -28,16 +32,21 @@ const initialVacancies = [
     },
 ];
 
-
-// --- Layout Component ---
-// This component now holds all the state and logic. She's the brain.
+// --- Brain/Layout Component ---
 const Layout = () => {
     const [vacancies, setVacancies] = useState(initialVacancies);
     const [nextId, setNextId] = useState(4);
-    const [userRole, setUserRole] = useState(null); // No one is logged in initially.
+    const [userRole, setUserRole] = useState(null);
     const navigate = useNavigate();
 
-    // --- Handlers ---
+    // --- Handlers (Functionality from both files) ---
+
+    const handleLogin = (role) => {
+        console.log(`Succesvol ingelogd als: ${role}`);
+        setUserRole(role);
+        // Navigate based on role if needed
+    };
+
     const handleAddVacancy = (vacancyData) => {
         const newVacancy = {...vacancyData, id: nextId, applications: 0, matches: 0};
         setVacancies([...vacancies, newVacancy]);
@@ -56,11 +65,10 @@ const Layout = () => {
         }
     };
 
-    // This function will serve for both "logout" and "delete profile" for now.
     const handleLogout = () => {
-        if (window.confirm('Are you sure you want to delete your profile and log out?')) {
+        if (window.confirm('Are you sure you want to log out?')) {
             setUserRole(null);
-            navigate('/'); // Go back to the home/login screen.
+            navigate('/');
         }
     };
 
@@ -71,7 +79,8 @@ const Layout = () => {
         deleteVacancy: handleDeleteVacancy,
         userRole,
         setUserRole,
-        logout: handleLogout
+        logout: handleLogout,
+        onLogin: handleLogin // Passing the login handler into context
     };
 
     return (
@@ -81,27 +90,31 @@ const Layout = () => {
     );
 };
 
-
 // --- Main App & Router ---
 function App() {
     const router = createBrowserRouter([
         {
             element: <Layout/>,
             children: [
+                // General Routes
                 {path: "/", element: <Home/>},
+                {path: "/login", element: <Login/>},
+                {path: "/student_register", element: <RegistrationForm/>},
+                {path: "/profiel", element: <Profile/>},
+
+                // Dashboard Routes
                 {path: "/dashboard/bedrijf", element: <CompanyDashboard/>},
                 {path: "/dashboard/student", element: <StudentDashboard/>},
                 {path: "/dashboard/coordinator", element: <CoordinatorDashboard/>},
-                {path: "/profiel", element: <Profile/>},
+
+                // Vacancy/Match Routes
                 {path: "/vacature/nieuw", element: <CreateVacancy/>},
                 {path: "/vacature/bewerken/:id", element: <CreateVacancy/>},
             ]
         }
     ]);
 
-    return (
-        <RouterProvider router={router}/>
-    );
+    return <RouterProvider router={router}/>;
 }
 
 export default App;
