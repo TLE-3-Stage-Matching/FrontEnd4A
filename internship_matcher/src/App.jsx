@@ -5,8 +5,9 @@ import './App.css';
 // Component Imports
 import Home from "./pages/Home.jsx";
 import Login from './components/Login';
-import RegistrationForm from './components/Student_register.jsx';
-import CompanyDashboard from './components/CompanyDashboard.jsx';
+import RegistrationForm from './pages/StudentRegister.jsx';
+import CompanyDashboard from './pages/CompanyDashboard.jsx';
+import MatchDetails from './pages/MatchDetails.jsx';
 
 const Layout = () => {
     return (
@@ -48,6 +49,10 @@ function App() {
                     path: "/company_dashboard",
                     element: <CompanyDashboard onViewChange={handleViewChange}/>
                 },
+                {
+                    path: "/match_details",
+                    element: <MatchDetails></MatchDetails>
+                }
             ]
         }
     ]);

@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import './CompanyDashboard.css';
+import '../components/companydashboard.css';
 
 const CompanyDashboard = ({onViewChange}) => {
     // State om te wisselen tussen dashboard en vacature aanmaken
