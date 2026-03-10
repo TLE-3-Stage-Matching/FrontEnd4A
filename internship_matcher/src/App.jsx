@@ -13,6 +13,9 @@ import Profile from "./pages/Profile.jsx";
 import StudentResult from "./pages/StudentResult.jsx";
 import StudentOnboarding from "./pages/StudentOnboarding.jsx";
 import './App.css';
+import DetailTestButton from "./pages/DetailTestButton.jsx";
+import matchesDetails from "./components/MatchesDetails.jsx";
+import MatchesDetails from "./components/MatchesDetails.jsx";
 
 
 // --- Brain/Layout Component ---
@@ -141,7 +144,11 @@ function App() {
                 {path: "/vacature/bewerken/:id", element: <CreateVacancy/>},
 
                 //student
-                {path: "Resultaten", element: <StudentResult/>},
+                {path: "resultaten", element: <StudentResult/>},
+
+                //details
+                {path: "/DetailsTest", element: <DetailTestButton/>},
+                {path: "matchesdetails", element: <MatchesDetails/>}
             ]
         }
     ]);
