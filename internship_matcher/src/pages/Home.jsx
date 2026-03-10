@@ -34,19 +34,25 @@ const CoordinatorIcon = () => (
 
 
 const Home = () => {
-    // We need the setUserRole function from the context to tell the app who we are.
-    const {setUserRole} = useContext(AppContext);
+    // We need the login function from the context to tell the app who we are.
+    const {login} = useContext(AppContext);
     const navigate = useNavigate();
 
     useEffect(() => {
         console.log('Home pagina (rolkeuze) ingeladen!');
     }, []);
 
-    const handleRoleSelect = (role) => {
+    const handleRoleSelect = async (role) => {
         console.log(`Gedrukt op rolkeuze: ${role}`);
-        setUserRole(role);
-        // Navigate to the correct dashboard based on the chosen role.
-        navigate(`/dashboard/${role}`);
+        await login(role);
+
+        if (role === 'student') {
+            navigate('/onboarding/student');
+        } else {
+            // The 'bedrijf' role is used in the path, not 'company'
+            const dashboardRole = role === 'company' ? 'bedrijf' : role;
+            navigate(`/dashboard/${dashboardRole}`);
+        }
     };
 
     return (
@@ -60,7 +66,7 @@ const Home = () => {
                     <h3>STUDENT</h3>
                     <p>Zoek stages en bekijk matches</p>
                 </button>
-                <button onClick={() => handleRoleSelect('bedrijf')} className="role-card">
+                <button onClick={() => handleRoleSelect('company')} className="role-card">
                     <CompanyIcon/>
                     <h3>STAGEBEDRIJF</h3>
                     <p>Plaats opdrachten en vind talenten</p>
