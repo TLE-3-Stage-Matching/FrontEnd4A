@@ -10,6 +10,7 @@ import StudentDashboard from "./pages/StudentDashboard.jsx";
 import CoordinatorDashboard from "./pages/CoordinatorDashboard.jsx";
 import CreateVacancy from "./pages/CreateVacancy.jsx";
 import Profile from "./pages/Profile.jsx";
+import StudentResult from "./pages/StudentResult.jsx";
 import StudentOnboarding from "./pages/StudentOnboarding.jsx";
 import './App.css';
 
@@ -138,6 +139,9 @@ function App() {
                 {path: "/dashboard/coordinator", element: <CoordinatorDashboard/>},
                 {path: "/vacature/nieuw", element: <CreateVacancy/>},
                 {path: "/vacature/bewerken/:id", element: <CreateVacancy/>},
+
+                //student
+                {path: "Resultaten", element: <StudentResult/>},
             ]
         }
     ]);
