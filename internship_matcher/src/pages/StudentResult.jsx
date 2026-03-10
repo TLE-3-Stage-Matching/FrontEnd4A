@@ -2,7 +2,6 @@ import React, {useState, useEffect} from 'react';
 import IntershipMatchesCard from "../components/IntershipMatchesCard.jsx";
 
 // --- 1. MOCK DATA ---
-// This simulates what you will eventually fetch from your database.
 const mockInternships = [
     {
         id: 1,
@@ -45,15 +44,11 @@ const mockInternships = [
 ];
 
 
-// --- 3. THE PARENT LIST COMPONENT ---
+// --- 2. THE PARENT LIST COMPONENT ---
 const InternshipMatchingPage = () => {
     const [internships, setInternships] = useState([]);
 
     useEffect(() => {
-        // Right now, we load the hardcoded data.
-        // LATER: Replace this block with a fetch() call to your database!
-
-        // Sort the data from highest percentage to lowest before setting it
         const sortedData = [...mockInternships].sort((a, b) => b.matchPercentage - a.matchPercentage);
         setInternships(sortedData);
     }, []);

@@ -1,7 +1,6 @@
 import React from "react";
 
 // --- 2. THE CARD COMPONENT ---
-// Receives an 'internship' object via props and displays its data dynamically.
 const InternshipCard = ({internship}) => {
     return (
         <div className="card"
