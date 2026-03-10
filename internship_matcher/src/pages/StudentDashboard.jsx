@@ -15,6 +15,9 @@ const StudentDashboard = () => {
                       onClick={() => console.log('Gedrukt op: Profiel knop')}>Profiel</Link>
             </header>
             <p>Welcome, student! This is your dashboard.</p>
+            <Link to="/vacatures" className="btn-primary" style={{marginTop: '2rem', display: 'inline-block'}}>
+                Bekijk Beschikbare Stages
+            </Link>
         </div>
     );
 }

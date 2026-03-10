@@ -12,6 +12,7 @@ import CreateVacancy from "./pages/CreateVacancy.jsx";
 import Profile from "./pages/Profile.jsx";
 import StudentResult from "./pages/StudentResult.jsx";
 import StudentOnboarding from "./pages/StudentOnboarding.jsx";
+import VacancyListings from "./pages/VacancyListings.jsx";
 import './App.css';
 
 
@@ -21,6 +22,7 @@ const Layout = () => {
     const [user, setUser] = useState(null); // Full user object, null if not logged in
     const [vacancies, setVacancies] = useState([]);
     const [tags, setTags] = useState([]);
+    const [studentProfile, setStudentProfile] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
 
@@ -53,6 +55,12 @@ const Layout = () => {
         const loggedInUser = await mockApi.loginAndGetUser(role);
         setUser(loggedInUser);
         console.log("User logged in:", loggedInUser);
+
+        if (role === 'student') {
+            const profile = await mockApi.getStudentProfile();
+            setStudentProfile(profile);
+            console.log("Student profile fetched:", profile);
+        }
     };
 
     const handleLogout = () => {
@@ -112,6 +120,7 @@ const Layout = () => {
         tags,
         syncStudentTags,
         createStudentUser,
+        studentProfile,
         isLoading,
     };
 
@@ -139,6 +148,7 @@ function App() {
                 {path: "/dashboard/coordinator", element: <CoordinatorDashboard/>},
                 {path: "/vacature/nieuw", element: <CreateVacancy/>},
                 {path: "/vacature/bewerken/:id", element: <CreateVacancy/>},
+                {path: "/vacatures", element: <VacancyListings/>},
 
                 //student
                 {path: "Resultaten", element: <StudentResult/>},
