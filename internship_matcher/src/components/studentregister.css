@@ -1,0 +1,142 @@
+/* It's giving "onboarding glow-up". Let's style these tags. */
+
+:root {
+    --primary-blue: #4F46E5;
+    --light-gray: #F8F9FA;
+    --border-gray: #E9ECEF;
+    --text-dark: #212529;
+    --text-light: #6C757D;
+    --white: #fff;
+}
+
+.registration-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 40px;
+    font-family: 'Inter', sans-serif;
+    color: var(--text-dark);
+}
+
+.header-section h1 {
+    font-size: 24px;
+    margin-bottom: 5px;
+}
+
+.header-section p {
+    color: var(--text-light);
+    margin-bottom: 30px;
+}
+
+.privacy-box {
+    background-color: var(--light-gray);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: space-around;
+    font-size: 13px;
+    border: 1px solid var(--border-gray);
+}
+
+.privacy-column ul {
+    list-style: '✅ '; /* Fun little checkmark */
+    padding-left: 20px;
+    margin-top: 10px;
+}
+
+.privacy-column ul li {
+    margin-bottom: 5px;
+}
+
+.form-group {
+    margin-bottom: 30px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 12px;
+    font-size: 1.1rem;
+}
+
+.tag-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 10px;
+    padding: 15px;
+    border: 1px solid var(--border-gray);
+    border-radius: 8px;
+    min-height: 80px;
+}
+
+.skill-tag {
+    background: var(--white);
+    border: 1px solid #ADB5BD;
+    padding: 8px 12px 8px 16px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.skill-tag:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.available-tag {
+    background-color: var(--light-gray);
+    border: 1px dashed var(--primary-blue);
+    color: var(--primary-blue);
+}
+
+.available-tag:hover {
+    background-color: #e8e7fa;
+}
+
+
+.remove-x, .add-plus {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 10px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: #E9ECEF;
+    color: var(--text-light);
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.skill-tag:hover .remove-x {
+    background-color: #ff4d4d;
+    color: white;
+}
+
+.available-tag:hover .add-plus {
+    background-color: var(--primary-blue);
+    color: white;
+}
+
+.placeholder-text {
+    color: var(--text-light);
+    font-style: italic;
+}
+
+.submit-btn {
+    width: 100%;
+    background-color: var(--primary-blue);
+    color: var(--white);
+    border: none;
+    padding: 15px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 20px;
+}

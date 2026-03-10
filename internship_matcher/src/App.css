@@ -1,44 +1,80 @@
 #root {
-    max-width: 1280px;
     margin: 0 auto;
+}
+
+/* --- Role Selection Screen Styles --- */
+
+.role-selection-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+}
+
+.role-selection-container h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.role-selection-container .subtitle {
+    font-size: 1.1rem;
+    color: #6C757D;
+    margin-bottom: 3rem;
+}
+
+.role-selection-container h2 {
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin-bottom: 2rem;
+}
+
+.role-options {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+}
+
+.role-card {
+    background-color: #fff;
+    border: 1px solid #DEE2E6;
+    border-radius: 8px;
     padding: 2rem;
-
+    width: 220px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-.logo {
-    height: 6em;
-    padding: 1.5em;
-    will-change: filter;
-    transition: filter 300ms;
+.role-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+    border-color: #4F46E5;
 }
 
-.logo:hover {
-    filter: drop-shadow(0 0 2em #646cffaa);
+.role-card h3 {
+    margin-top: 1rem;
+    font-size: 1.25rem;
+    color: #4F46E5;
 }
 
-.logo.react:hover {
-    filter: drop-shadow(0 0 2em #61dafbaa);
+.role-card p {
+    color: #495057;
+    margin-bottom: 0;
 }
 
-@keyframes logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+/* --- Danger Button for Profile Deletion --- */
+.btn-danger {
+    color: #fff;
+    background-color: #B02A37; /* Darker red for better contrast */
+    border-color: #B02A37;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    a:nth-of-type(2) .logo {
-        animation: logo-spin infinite 20s linear;
-    }
-}
-
-.card {
-    padding: 2em;
-}
-
-.read-the-docs {
-    color: #888;
+.btn-danger:hover {
+    background-color: #94242f;
+    border-color: #88212b;
 }

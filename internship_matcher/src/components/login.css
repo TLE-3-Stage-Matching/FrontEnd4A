@@ -6,10 +6,7 @@ html, body, #root {
     overflow: hidden;
 }
 
-│
-
-10
-.landing-container, │
+.landing-container,
 .login-form-container {
     height: 100vh;
     display: flex;
