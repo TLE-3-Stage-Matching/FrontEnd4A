@@ -1,86 +1,117 @@
-import {useState} from 'react';
-import {createBrowserRouter, RouterProvider, Outlet, useNavigate} from "react-router-dom";
+import {useState, useEffect} from 'react';
+import {createBrowserRouter, RouterProvider, Outlet, useNavigate, Link} from "react-router-dom";
 import {AppContext} from './context/AppContext';
-import './App.css';
+import * as mockApi from './api/mockApi'; // Import the mock API
 
 // --- Component Imports ---
 import Home from "./pages/Home.jsx";
-import Login from './components/Login';
-import RegistrationForm from './pages/StudentRegister.jsx';
 import CompanyDashboard from "./pages/company_dashboard.jsx";
 import StudentDashboard from "./pages/StudentDashboard.jsx";
 import CoordinatorDashboard from "./pages/CoordinatorDashboard.jsx";
 import CreateVacancy from "./pages/CreateVacancy.jsx";
 import Profile from "./pages/Profile.jsx";
+import StudentOnboarding from "./pages/StudentOnboarding.jsx";
+import './App.css';
 
-// --- Hardcoded Initial Data ---
-const initialVacancies = [
-    {
-        id: 1,
-        title: 'Frontend Developer Stagiair',
-        applications: 12,
-        matches: 8,
-        skills: [{id: 1, name: 'React', type: 'must'}]
-    },
-    {id: 2, title: 'UX/UI Design Stage', applications: 5, matches: 5, skills: [{id: 1, name: 'Figma', type: 'must'}]},
-    {
-        id: 3,
-        title: 'Backend Developer Stage',
-        applications: 2,
-        matches: 1,
-        skills: [{id: 1, name: 'Node.js', type: 'must'}]
-    },
-];
 
 // --- Brain/Layout Component ---
 const Layout = () => {
-    const [vacancies, setVacancies] = useState(initialVacancies);
-    const [nextId, setNextId] = useState(4);
-    const [userRole, setUserRole] = useState(null);
+    // --- State ---
+    const [user, setUser] = useState(null); // Full user object, null if not logged in
+    const [vacancies, setVacancies] = useState([]);
+    const [tags, setTags] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
 
-    // --- Handlers (Functionality from both files) ---
+    // --- Effects ---
+    // Initial data fetch
+    useEffect(() => {
+        const fetchInitialData = async () => {
+            setIsLoading(true);
+            console.log("App loading, fetching initial data...");
+            try {
+                const [fetchedVacancies, fetchedTags] = await Promise.all([
+                    mockApi.getVacancies(),
+                    mockApi.getTags(),
+                ]);
+                setVacancies(fetchedVacancies);
+                setTags(fetchedTags);
+                console.log("Initial data fetched successfully.");
+            } catch (error) {
+                console.error("Failed to fetch initial data:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchInitialData();
+    }, []);
 
-    const handleLogin = (role) => {
-        console.log(`Succesvol ingelogd als: ${role}`);
-        setUserRole(role);
-        // Navigate based on role if needed
-    };
-
-    const handleAddVacancy = (vacancyData) => {
-        const newVacancy = {...vacancyData, id: nextId, applications: 0, matches: 0};
-        setVacancies([...vacancies, newVacancy]);
-        setNextId(nextId + 1);
-        navigate('/dashboard/bedrijf');
-    };
-
-    const handleUpdateVacancy = (updatedVacancy) => {
-        setVacancies(vacancies.map(v => v.id === updatedVacancy.id ? updatedVacancy : v));
-        navigate('/dashboard/bedrijf');
-    };
-
-    const handleDeleteVacancy = (idToDelete) => {
-        if (window.confirm('Are you sure you want to delete this vacancy?')) {
-            setVacancies(vacancies.filter(v => v.id !== idToDelete));
-        }
+    // --- Handlers ---
+    const handleLogin = async (role) => {
+        console.log(`Attempting to log in as: ${role}`);
+        const loggedInUser = await mockApi.loginAndGetUser(role);
+        setUser(loggedInUser);
+        console.log("User logged in:", loggedInUser);
     };
 
     const handleLogout = () => {
-        if (window.confirm('Are you sure you want to log out?')) {
-            setUserRole(null);
+        if (window.confirm('Weet je zeker dat je wilt uitloggen/je profiel wilt verwijderen?')) {
+            console.log("User logged out.");
+            setUser(null);
             navigate('/');
         }
     };
 
+    // Vacancy Handlers
+    const addVacancy = async (vacancyData) => {
+        const newVacancy = await mockApi.createVacancy(vacancyData);
+        setVacancies(prevVacancies => [...prevVacancies, newVacancy]);
+        navigate('/dashboard/bedrijf');
+    };
+
+    const updateVacancy = async (updatedVacancy) => {
+        const returnedVacancy = await mockApi.updateVacancy(updatedVacancy);
+        setVacancies(vacancies.map(v => v.id === returnedVacancy.id ? returnedVacancy : v));
+        navigate('/dashboard/bedrijf');
+    };
+
+    const deleteVacancy = async (idToDelete) => {
+        if (window.confirm('Weet je zeker dat je deze vacature wilt verwijderen?')) {
+            await mockApi.deleteVacancy(idToDelete);
+            setVacancies(vacancies.filter(v => v.id !== idToDelete));
+        }
+    };
+
+    // Student Handlers
+    const syncStudentTags = async (tagsPayload) => {
+        await mockApi.syncStudentTags({tags: tagsPayload});
+        // In a real app, we might want to update a local user profile state
+        console.log("Student tags synced via context handler.");
+    };
+
+    // Coordinator Handlers
+    const createStudentUser = async (studentData) => {
+        await mockApi.createStudentUser(studentData);
+        // In a real app, we might want to re-fetch the list of users
+        console.log("Student user created via context handler.");
+    };
+
+    // --- Context Value ---
     const contextValue = {
-        vacancies,
-        addVacancy: handleAddVacancy,
-        updateVacancy: handleUpdateVacancy,
-        deleteVacancy: handleDeleteVacancy,
-        userRole,
-        setUserRole,
+        user,
+        userRole: user ? user.role : null,
+        login: handleLogin,
         logout: handleLogout,
-        onLogin: handleLogin // Passing the login handler into context
+
+        vacancies,
+        addVacancy,
+        updateVacancy,
+        deleteVacancy,
+
+        tags,
+        syncStudentTags,
+        createStudentUser,
+        isLoading,
     };
 
     return (
@@ -90,24 +121,21 @@ const Layout = () => {
     );
 };
 
+
 // --- Main App & Router ---
 function App() {
+    // Note: The placeholder components for Student/Coordinator dashboards are removed
+    // as we now have dedicated files for them.
     const router = createBrowserRouter([
         {
             element: <Layout/>,
             children: [
-                // General Routes
                 {path: "/", element: <Home/>},
-                {path: "/login", element: <Login/>},
-                {path: "/student_register", element: <RegistrationForm/>},
                 {path: "/profiel", element: <Profile/>},
-
-                // Dashboard Routes
+                {path: "/onboarding/student", element: <StudentOnboarding/>},
                 {path: "/dashboard/bedrijf", element: <CompanyDashboard/>},
                 {path: "/dashboard/student", element: <StudentDashboard/>},
                 {path: "/dashboard/coordinator", element: <CoordinatorDashboard/>},
-
-                // Vacancy/Match Routes
                 {path: "/vacature/nieuw", element: <CreateVacancy/>},
                 {path: "/vacature/bewerken/:id", element: <CreateVacancy/>},
             ]
