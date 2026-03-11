@@ -1,0 +1,64 @@
+/* Styling for the student's view of vacancy listings */
+
+.vacancy-listings-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 900px;
+    margin: 20px auto 0 auto;
+}
+
+.vacancy-card {
+    background: var(--white, #fff);
+    border: 1px solid var(--border-gray, #E9ECEF);
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.vacancy-card h3 {
+    margin: 0 0 8px 0;
+}
+
+.vacancy-card p {
+    margin: 0 0 16px 0;
+    color: var(--text-light, #6C757D);
+    font-size: 1rem;
+}
+
+/* Match Explanation Styles */
+.match-explanation {
+    border-top: 1px solid var(--border-gray, #E9ECEF);
+    margin-top: 20px;
+    padding-top: 16px;
+}
+
+.match-explanation h4 {
+    margin: 0 0 10px 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-dark, #212529);
+}
+
+.match-explanation ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.match-explanation li {
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.reason-positive {
+    color: #155724; /* Green for positive */
+}
+
+.reason-negative {
+    color: #721c24; /* Red/brown for negative */
+    font-weight: 500;
+}

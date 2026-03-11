@@ -46,7 +46,7 @@ const CompanyDashboard = () => {
         // The actual logout logic (which includes a confirm dialog) is in the context.
         logout();
     }
-    
+
     // --- RENDER ---
     return (
         <div className="dashboard-container">

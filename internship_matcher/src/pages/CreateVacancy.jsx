@@ -3,7 +3,7 @@ import {useNavigate, useParams} from 'react-router-dom';
 import {AppContext} from '../context/AppContext';
 import '../components/CreateVacancy.css';
 
-// An ACCESSIBLE toggle component. We love an inclusive queen.
+// ... (SkillToggle component remains the same)
 const SkillToggle = ({type, onToggle}) => (
     <button type="button" role="switch" aria-checked={type === 'nice'} onClick={onToggle} className="toggle-container">
         <span className={`toggle-label ${type === 'must' ? 'active' : ''}`} aria-hidden="true">Must</span>
@@ -14,8 +14,10 @@ const SkillToggle = ({type, onToggle}) => (
     </button>
 );
 
+
 const CreateVacancy = () => {
     // --- HOOKS & CONTEXT ---
+    const {vacancies, tags: availableTags, isLoading, addVacancy, updateVacancy} = useContext(AppContext);
     const {vacancies, tags: availableTags, allStudents, isLoading, addVacancy, updateVacancy} = useContext(AppContext);
     const navigate = useNavigate();
     const {id} = useParams();
@@ -24,7 +26,7 @@ const CreateVacancy = () => {
     // --- STATE ---
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    const [skills, setSkills] = useState([]);
+    const [skills, setSkills] = useState([]); // This will hold objects like {id?, name, type}
     const [currentSkill, setCurrentSkill] = useState('');
     const [matchCount, setMatchCount] = useState(null); // State for the live counter
 
@@ -180,12 +182,10 @@ const CreateVacancy = () => {
                         </div>
                     </div>
                     <div className="skills-list-container">
-                        <div className="skills-list">
-                            <h3>Must-have</h3>
+                        <div className="skills-list"><h3>Must-have</h3>
                             <ul className="skills-pills">{renderSkillList('must')}</ul>
                         </div>
-                        <div className="skills-list">
-                            <h3>Nice-to-have</h3>
+                        <div className="skills-list"><h3>Nice-to-have</h3>
                             <ul className="skills-pills">{renderSkillList('nice')}</ul>
                         </div>
                     </div>
