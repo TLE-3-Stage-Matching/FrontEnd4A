@@ -47,17 +47,32 @@ let mockTags = [
     {id: 10, name: 'Python', tag_type: 'skill'},
 ];
 
-// New: Mock data for a student profile
 const mockStudentProfile = {
     user: {id: 101, name: 'Test Student'},
     // A student has a set of tags they possess. We only need the IDs.
     skills: new Set([1, 2, 5, 9]), // Has React, JS, Figma, Agile
 };
 
+const mockStudents = [
+    {id: 201, skills: new Set([1, 2, 3])}, // React, JS, CSS
+    {id: 202, skills: new Set([4, 7])},    // Node.js, SQL
+    {id: 203, skills: new Set([5, 6])},    // Figma, UI/UX
+    {id: 204, skills: new Set([1, 2, 4])}, // React, JS, Node.js
+    {id: 205, skills: new Set([1, 3, 5])}, // React, CSS, Figma
+    {id: 206, skills: new Set([10])},      // Python
+    {id: 207, skills: new Set([8, 9])},    // PM, Agile
+    {id: 208, skills: new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])}, // Full stack
+    {id: 209, skills: new Set([1])},       // React only
+    {id: 210, skills: new Set([4])},       // Node.js only
+    {id: 211, skills: new Set([1, 5])},    // React, Figma
+    {id: 212, skills: new Set([2, 4])},    // JS, Node.js
+];
+
 let nextVacancyId = 4;
 
 // --- Helper to simulate network delay ---
 const simulateDelay = (ms = 400) => new Promise(resolve => setTimeout(resolve, ms));
+
 
 // --- Mock API Functions ---
 
@@ -110,7 +125,6 @@ export const loginAndGetUser = async (role) => {
     return {role: role, first_name: "Test", last_name: role.charAt(0).toUpperCase() + role.slice(1)};
 };
 
-// New: Function to get the student's profile
 export const getStudentProfile = async () => {
     await simulateDelay();
     console.log("Mock API: Fetched student profile");
@@ -120,4 +134,11 @@ export const getStudentProfile = async () => {
         skills: mockTags.filter(tag => mockStudentProfile.skills.has(tag.id))
     };
     return profileWithFullSkills;
+};
+
+// New: Function to get all students
+export const getStudents = async () => {
+    await simulateDelay();
+    console.log("Mock API: Fetched all students");
+    return [...mockStudents];
 };

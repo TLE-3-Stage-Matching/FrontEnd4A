@@ -3,7 +3,7 @@ import {useNavigate, useParams} from 'react-router-dom';
 import {AppContext} from '../context/AppContext';
 import '../components/CreateVacancy.css';
 
-// ... (SkillToggle component remains the same)
+// An ACCESSIBLE toggle component. We love an inclusive queen.
 const SkillToggle = ({type, onToggle}) => (
     <button type="button" role="switch" aria-checked={type === 'nice'} onClick={onToggle} className="toggle-container">
         <span className={`toggle-label ${type === 'must' ? 'active' : ''}`} aria-hidden="true">Must</span>
@@ -13,7 +13,6 @@ const SkillToggle = ({type, onToggle}) => (
         <span className={`toggle-label ${type === 'nice' ? 'active' : ''}`} aria-hidden="true">Nice</span>
     </button>
 );
-
 
 const CreateVacancy = () => {
     // --- HOOKS & CONTEXT ---
@@ -27,7 +26,7 @@ const CreateVacancy = () => {
     const [description, setDescription] = useState('');
     const [skills, setSkills] = useState([]);
     const [currentSkill, setCurrentSkill] = useState('');
-    const [matchCount, setMatchCount] = useState(null);
+    const [matchCount, setMatchCount] = useState(null); // State for the live counter
 
     // --- EFFECTS ---
     // Effect to pre-fill the form in edit mode
@@ -62,10 +61,9 @@ const CreateVacancy = () => {
             return;
         }
         const existingTag = availableTags.find(tag => tag.name.toLowerCase() === skillName.toLowerCase());
-        const newSkill = existingTag ? {id: existingTag.id, name: existingTag.name, type: 'must'} : {
-            name: skillName,
-            type: 'must'
-        };
+        const newSkill = existingTag
+            ? {id: existingTag.id, name: existingTag.name, type: 'must'}
+            : {name: skillName, type: 'must'};
         setSkills([...skills, newSkill]);
         setCurrentSkill('');
     };
@@ -85,20 +83,17 @@ const CreateVacancy = () => {
         e.preventDefault();
         const apiTags = skills.map(skill => {
             const tagPayload = {importance: skill.type === 'must' ? 1 : 0};
-            if (skill.id) tagPayload.id = skill.id;
-            else {
+            if (skill.id) {
+                tagPayload.id = skill.id;
+            } else {
                 tagPayload.name = skill.name;
                 tagPayload.tag_type = 'skill';
             }
             return tagPayload;
         });
         const vacancyData = {title, description, tags: apiTags};
-
-        if (isEditMode) {
-            await updateVacancy(parseInt(id), vacancyData);
-        } else {
-            await addVacancy(vacancyData);
-        }
+        if (isEditMode) await updateVacancy({...vacancyData, id: parseInt(id)});
+        else await addVacancy(vacancyData);
     };
 
     if (isLoading) {
@@ -173,10 +168,12 @@ const CreateVacancy = () => {
                         </div>
                     </div>
                     <div className="skills-list-container">
-                        <div className="skills-list"><h3>Must-have</h3>
+                        <div className="skills-list">
+                            <h3>Must-have</h3>
                             <ul className="skills-pills">{renderSkillList('must')}</ul>
                         </div>
-                        <div className="skills-list"><h3>Nice-to-have</h3>
+                        <div className="skills-list">
+                            <h3>Nice-to-have</h3>
                             <ul className="skills-pills">{renderSkillList('nice')}</ul>
                         </div>
                     </div>

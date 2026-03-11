@@ -30,6 +30,7 @@ const Layout = () => {
     const [vacancies, setVacancies] = useState([]);
     const [tags, setTags] = useState([]);
     const [studentProfile, setStudentProfile] = useState(null);
+    const [allStudents, setAllStudents] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
 
@@ -40,12 +41,14 @@ const Layout = () => {
             setIsLoading(true);
             console.log("App loading, fetching initial data...");
             try {
-                const [fetchedVacancies, fetchedTags] = await Promise.all([
+                const [fetchedVacancies, fetchedTags, fetchedStudents] = await Promise.all([
                     mockApi.getVacancies(),
                     mockApi.getTags(),
+                    mockApi.getStudents(),
                 ]);
                 setVacancies(fetchedVacancies);
                 setTags(fetchedTags);
+                setAllStudents(fetchedStudents);
                 console.log("Initial data fetched successfully.");
             } catch (error) {
                 console.error("Failed to fetch initial data:", error);
@@ -128,6 +131,7 @@ const Layout = () => {
         syncStudentTags,
         createStudentUser,
         studentProfile,
+        allStudents,
         isLoading,
     };
 
