@@ -1,5 +1,5 @@
-import {useState, useEffect, useContext} from 'react';
-import {createBrowserRouter, RouterProvider, Outlet, useNavigate, Navigate} from "react-router-dom";
+import {useEffect, useState} from 'react';
+import {createBrowserRouter, Outlet, RouterProvider, useNavigate} from "react-router-dom";
 import {AppContext} from './context/AppContext';
 import * as api from './api/client.js';
 
@@ -17,8 +17,7 @@ import MatchesDetails from "./pages/MatchesDetails.jsx";
 import StudentResult from "./pages/StudentResult.jsx";
 import StudentOnboarding from "./pages/StudentOnboarding.jsx";
 import VacancyListings from "./pages/VacancyListings.jsx";
-import DetailTestButton from "./pages/DetailTestButton.jsx";
-import CreateNewStudent from "./pages/CreateNewStudent.jsx";
+import CreateStudent from "./pages/CreateNewStudent.jsx";
 import './App.css';
 
 const Layout = () => {
@@ -108,8 +107,7 @@ const Layout = () => {
         if (window.confirm('Weet je zeker dat je wilt uitloggen?')) {
             try {
                 await api.logout();
-            } catch (e) { /* ignore */
-            }
+            } catch (e) { /* ignore */ }
             localStorage.removeItem('token');
             setUser(null);
             setIsAuthenticated(false);
@@ -118,12 +116,28 @@ const Layout = () => {
         }
     };
 
+    // --- LOGICA FUNCTIES ---
+    const createStudentUser = async (payload) => {
+        setIsLoading(true);
+        try {
+            return await api.createStudentUser(payload);
+        } catch (error) {
+            console.error("Fout bij aanmaken student:", error);
+            throw error;
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // --- CONTEXT VALUE (Nu correct buiten de functies geplaatst) ---
     const contextValue = {
         user,
         isAuthenticated,
         isLoading,
         login: handleLogin,
         logout: handleLogout,
+        createStudentUser,
+        students: appData.allStudents || [],
         ...appData,
         addVacancy: async (data) => {
             const res = await api.createVacancy(data);
@@ -163,6 +177,7 @@ function App() {
                 {path: "/matches", element: <MatchesDetails/>},
                 {path: "/vacatures", element: <VacancyListings/>},
                 {path: "/Resultaten", element: <StudentResult/>},
+                {path: "/create/student", element: <CreateStudent/>}
             ]
         }
     ]);
