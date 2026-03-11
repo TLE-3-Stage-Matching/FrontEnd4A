@@ -1,23 +1,32 @@
-import {useEffect, useState} from 'react';
-import {createBrowserRouter, Outlet, RouterProvider, useNavigate} from "react-router-dom";
-import {AppContext} from './context/AppContext';
+import React, { useEffect, useState } from 'react';
+import { createBrowserRouter, Outlet, RouterProvider, useNavigate } from "react-router-dom";
+import { AppContext } from './context/AppContext';
 import * as api from './api/client.js';
 
-// --- Component Imports ---
+// --- Pageroute Imports ---
 import HomePage from "./pages/Home.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
+import Profile from "./pages/Profile.jsx";
+
+// Registratie & Onboarding
 import CompanyRegistrationPage from "./pages/CompanyRegistrationPage.jsx";
 import CoordinatorRegistrationPage from "./pages/CoordinatorRegistrationPage.jsx";
-import CompanyDashboard from "./pages/company_dashboard.jsx";
-import StudentDashboard from "./pages/StudentDashboard.jsx";
-import CoordinatorDashboard from "./pages/CoordinatorDashboard.jsx";
-import CreateVacancy from "./pages/CreateVacancy.jsx";
-import Profile from "./pages/Profile.jsx";
-import MatchesDetails from "./pages/MatchesDetails.jsx";
-import StudentResult from "./pages/StudentResult.jsx";
 import StudentOnboarding from "./pages/StudentOnboarding.jsx";
+
+// Dashboards
+import StudentDashboard from "./pages/StudentDashboard.jsx";
+import CompanyDashboard from "./pages/CompanyDashboard.jsx";
+import CoordinatorDashboard from "./pages/CoordinatorDashboard.jsx";
+
+// Vacatures & Studenten Beheer
+import CreateVacancy from "./pages/CreateVacancy.jsx";
 import VacancyListings from "./pages/VacancyListings.jsx";
 import CreateStudent from "./pages/CreateNewStudent.jsx";
+import StudentResult from "./pages/StudentResult.jsx";
+import MatchesDetails from "./pages/MatchesDetails.jsx";
+
+// --- Component & Style Imports ---
+import StudentApplications from "./components/StudentApplications.jsx";
 import './App.css';
 
 const Layout = () => {
@@ -32,13 +41,12 @@ const Layout = () => {
     });
     const navigate = useNavigate();
 
-    // Sessie valideren bij opstarten
     useEffect(() => {
         const validateSession = async () => {
             const token = localStorage.getItem('token');
             if (token) {
                 try {
-                    const {data: userData} = await api.getMe();
+                    const { data: userData } = await api.getMe();
                     setUser(userData);
                     setIsAuthenticated(true);
                 } catch (error) {
@@ -51,7 +59,6 @@ const Layout = () => {
         validateSession();
     }, []);
 
-    // Data ophalen en navigeren na login
     useEffect(() => {
         if (!isAuthenticated || !user) return;
 
@@ -59,28 +66,41 @@ const Layout = () => {
             setIsLoading(true);
             try {
                 const tagsResult = await api.getTags();
-                const newAppData = {...appData, tags: tagsResult.data};
+                const newAppData = { ...appData, tags: tagsResult.data };
 
                 if (user.role === 'student') {
                     const profileResult = await api.getStudentProfile();
-                    newAppData.studentProfile = profileResult.data;
-                    setAppData(newAppData);
+                    const studentProfile = profileResult.data;
 
-                    if (profileResult.data.student_tags?.length > 0) {
+                    // Haal vacatures direct op als er tags zijn
+                    let vacancies = [];
+                    if (studentProfile.student_tags?.length > 0) {
                         const vacanciesResult = await api.getPublicVacancies();
-                        setAppData(prev => ({
-                            ...prev,
-                            vacancies: vacanciesResult.data,
-                            studentProfile: profileResult.data
-                        }));
+                        vacancies = vacanciesResult.data;
+                    }
+
+                    // Update ALLES in één keer
+                    setAppData(prev => ({
+                        ...prev,
+                        tags: tagsResult.data,
+                        studentProfile: studentProfile,
+                        vacancies: vacancies
+                    }));
+
+                    // Navigeer op basis van de lokale variabele, niet de state
+                    if (studentProfile.student_tags?.length > 0) {
                         navigate('/dashboard/student');
                     } else {
                         navigate('/onboarding/student');
                     }
                 } else if (user.role === 'company') {
                     const vacanciesResult = await api.getCompanyVacancies();
-                    setAppData({...newAppData, vacancies: vacanciesResult.data});
+                    setAppData({ ...newAppData, vacancies: vacanciesResult.data });
                     navigate('/dashboard/bedrijf');
+                } else if (user.role === 'coordinator') {
+                    const studentsResult = await api.getStudents();
+                    setAppData({ ...newAppData, allStudents: studentsResult.data });
+                    navigate('/dashboard/coordinator');
                 } else {
                     setAppData(newAppData);
                     navigate('/dashboard/coordinator');
@@ -96,9 +116,9 @@ const Layout = () => {
     }, [user, isAuthenticated]);
 
     const handleLogin = async (email, password) => {
-        const {token} = await api.login(email, password);
+        const { token } = await api.login(email, password);
         localStorage.setItem('token', token);
-        const {data: userData} = await api.getMe();
+        const { data: userData } = await api.getMe();
         setUser(userData);
         setIsAuthenticated(true);
     };
@@ -111,16 +131,20 @@ const Layout = () => {
             localStorage.removeItem('token');
             setUser(null);
             setIsAuthenticated(false);
-            setAppData({vacancies: [], tags: [], allStudents: [], studentProfile: null});
+            setAppData({ vacancies: [], tags: [], allStudents: [], studentProfile: null });
             navigate('/login');
         }
     };
 
-    // --- LOGICA FUNCTIES ---
     const createStudentUser = async (payload) => {
         setIsLoading(true);
         try {
-            return await api.createStudentUser(payload);
+            const res = await api.createStudentUser(payload);
+            setAppData(prev => ({
+                ...prev,
+                allStudents: [...prev.allStudents, res.data]
+            }));
+            return res;
         } catch (error) {
             console.error("Fout bij aanmaken student:", error);
             throw error;
@@ -129,7 +153,6 @@ const Layout = () => {
         }
     };
 
-    // --- CONTEXT VALUE (Nu correct buiten de functies geplaatst) ---
     const contextValue = {
         user,
         isAuthenticated,
@@ -141,19 +164,19 @@ const Layout = () => {
         ...appData,
         addVacancy: async (data) => {
             const res = await api.createVacancy(data);
-            setAppData(prev => ({...prev, vacancies: [...prev.vacancies, res.data]}));
+            setAppData(prev => ({ ...prev, vacancies: [...prev.vacancies, res.data] }));
             navigate('/dashboard/bedrijf');
         },
         syncStudentTags: async (tagsPayload) => {
             await api.syncStudentTags(tagsPayload);
-            const {data: updatedProfile} = await api.getStudentProfile();
-            setAppData(prev => ({...prev, studentProfile: updatedProfile}));
+            const { data: updatedProfile } = await api.getStudentProfile();
+            setAppData(prev => ({ ...prev, studentProfile: updatedProfile }));
         }
     };
 
     return (
         <AppContext.Provider value={contextValue}>
-            <Outlet/>
+            <Outlet />
         </AppContext.Provider>
     );
 };
@@ -161,28 +184,38 @@ const Layout = () => {
 function App() {
     const router = createBrowserRouter([
         {
-            element: <Layout/>,
+            element: <Layout />,
             children: [
-                {path: "/", element: <HomePage/>},
-                {path: "/login", element: <LoginPage/>},
-                {path: "/profiel", element: <Profile/>},
-                {path: "/onboarding/student", element: <StudentOnboarding/>},
-                {path: "/dashboard/bedrijf", element: <CompanyDashboard/>},
-                {path: "/dashboard/student", element: <StudentDashboard/>},
-                {path: "/dashboard/coordinator", element: <CoordinatorDashboard/>},
-                {path: "/vacature/nieuw", element: <CreateVacancy/>},
-                {path: "/vacature/bewerken/:id", element: <CreateVacancy/>},
-                {path: "/register/bedrijf", element: <CompanyRegistrationPage/>},
-                {path: "/register/coordinator", element: <CoordinatorRegistrationPage/>},
-                {path: "/matches", element: <MatchesDetails/>},
-                {path: "/vacatures", element: <VacancyListings/>},
-                {path: "/Resultaten", element: <StudentResult/>},
-                {path: "/create/student", element: <CreateStudent/>}
+                // Algemene paden
+                { path: "/", element: <HomePage /> },
+                { path: "/login", element: <LoginPage /> },
+                { path: "/profiel", element: <Profile /> },
+
+                // Dashboards per rol
+                { path: "/dashboard/student", element: <StudentDashboard /> },
+                { path: "/dashboard/bedrijf", element: <CompanyDashboard /> },
+                { path: "/dashboard/coordinator", element: <CoordinatorDashboard /> },
+
+                // Registratie & Onboarding
+                { path: "/register/bedrijf", element: <CompanyRegistrationPage /> },
+                { path: "/register/coordinator", element: <CoordinatorRegistrationPage /> },
+                { path: "/onboarding/student", element: <StudentOnboarding /> },
+
+                // Vacatures
+                { path: "/vacatures", element: <VacancyListings /> },
+                { path: "/vacature/nieuw", element: <CreateVacancy /> },
+                { path: "/vacature/bewerken/:id", element: <CreateVacancy /> },
+                { path: "/vacature/:id/kandidaten", element: <StudentApplications /> },
+
+                // Studenten & Resultaten
+                { path: "/create/student", element: <CreateStudent /> },
+                { path: "/matches", element: <MatchesDetails /> },
+                { path: "/resultaten", element: <StudentResult /> },
             ]
         }
     ]);
 
-    return <RouterProvider router={router}/>;
+    return <RouterProvider router={router} />;
 }
 
 export default App;
