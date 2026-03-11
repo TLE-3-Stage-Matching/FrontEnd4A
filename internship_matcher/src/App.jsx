@@ -12,6 +12,7 @@ import StudentDashboard from "./pages/StudentDashboard.jsx";
 import CoordinatorDashboard from "./pages/CoordinatorDashboard.jsx";
 import CreateVacancy from "./pages/CreateVacancy.jsx";
 import Profile from "./pages/Profile.jsx";
+import MatchesDetails from "./pages/MatchesDetails.jsx";
 
 // --- Hardcoded Initial Data ---
 const initialVacancies = [
@@ -110,6 +111,10 @@ function App() {
                 // Vacancy/Match Routes
                 {path: "/vacature/nieuw", element: <CreateVacancy/>},
                 {path: "/vacature/bewerken/:id", element: <CreateVacancy/>},
+                {path: "/stage/:id", element: <MatchesDetails/>}, // Added dynamic route
+
+                ///////////// testting for this branch
+                {path: "/matches", element: <MatchesDetails/>},
             ]
         }
     ]);
