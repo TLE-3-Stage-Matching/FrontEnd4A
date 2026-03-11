@@ -3,7 +3,7 @@ import {useNavigate, useParams} from 'react-router-dom';
 import {AppContext} from '../context/AppContext';
 import '../components/CreateVacancy.css';
 
-// An ACCESSIBLE toggle component. We love an inclusive queen.
+// ... (SkillToggle component remains the same)
 const SkillToggle = ({type, onToggle}) => (
     <button type="button" role="switch" aria-checked={type === 'nice'} onClick={onToggle} className="toggle-container">
         <span className={`toggle-label ${type === 'must' ? 'active' : ''}`} aria-hidden="true">Must</span>
@@ -26,7 +26,7 @@ const CreateVacancy = () => {
     const [description, setDescription] = useState('');
     const [skills, setSkills] = useState([]);
     const [currentSkill, setCurrentSkill] = useState('');
-    const [matchCount, setMatchCount] = useState(null); // State for the live counter
+    const [matchCount, setMatchCount] = useState(null);
 
     // --- EFFECTS ---
     // Effect to pre-fill the form in edit mode
@@ -41,7 +41,6 @@ const CreateVacancy = () => {
         }
     }, [id, isEditMode, vacancies, isLoading]);
 
-    // Effect to calculate the live match count whenever skills change
     useEffect(() => {
         if (isLoading || !allStudents) return;
         const mustHaveIds = skills.filter(s => s.type === 'must' && s.id).map(s => s.id);
@@ -61,9 +60,10 @@ const CreateVacancy = () => {
             return;
         }
         const existingTag = availableTags.find(tag => tag.name.toLowerCase() === skillName.toLowerCase());
-        const newSkill = existingTag
-            ? {id: existingTag.id, name: existingTag.name, type: 'must'}
-            : {name: skillName, type: 'must'};
+        const newSkill = existingTag ? {id: existingTag.id, name: existingTag.name, type: 'must'} : {
+            name: skillName,
+            type: 'must'
+        };
         setSkills([...skills, newSkill]);
         setCurrentSkill('');
     };
@@ -83,23 +83,27 @@ const CreateVacancy = () => {
         e.preventDefault();
         const apiTags = skills.map(skill => {
             const tagPayload = {importance: skill.type === 'must' ? 1 : 0};
-            if (skill.id) {
-                tagPayload.id = skill.id;
-            } else {
+            if (skill.id) tagPayload.id = skill.id;
+            else {
                 tagPayload.name = skill.name;
                 tagPayload.tag_type = 'skill';
             }
             return tagPayload;
         });
         const vacancyData = {title, description, tags: apiTags};
-        if (isEditMode) await updateVacancy({...vacancyData, id: parseInt(id)});
-        else await addVacancy(vacancyData);
+
+        if (isEditMode) {
+            await updateVacancy(parseInt(id), vacancyData);
+        } else {
+            await addVacancy(vacancyData);
+        }
     };
 
     if (isLoading) {
         return <div className="dashboard-container"><h1>Aan het laden...</h1></div>;
     }
 
+    // --- RENDER ---
     const renderSkillList = (type) => (
         skills
             .filter(skill => skill.type === type)
@@ -123,6 +127,7 @@ const CreateVacancy = () => {
                 </button>
                 <h1>{isEditMode ? 'Vacature Bewerken' : 'Nieuwe Vacature'}</h1>
             </div>
+
             <form onSubmit={handleSubmit}>
                 <div className="form-section">
                     <h2>Basisinformatie</h2>
@@ -137,6 +142,7 @@ const CreateVacancy = () => {
                                   onChange={(e) => setDescription(e.target.value)}></textarea>
                     </div>
                 </div>
+
                 <div className="form-section">
                     <div className="skills-header">
                         <h2>Vereiste Vaardigheden</h2>
@@ -146,13 +152,14 @@ const CreateVacancy = () => {
                             </div>
                         )}
                     </div>
+
                     {matchCount !== null && matchCount < 5 && (
                         <div className="bias-tip">
                             <p><strong>Bias Tip:</strong> Je eisen zijn erg streng. Overweeg om sommige 'must-have'
                                 skills te veranderen in 'nice-to-have' om meer talent te bereiken.</p>
                         </div>
                     )}
-                    
+
                     <div className="form-group">
                         <label htmlFor="new-skill-input">Nieuwe skill toevoegen</label>
                         <div className="skills-input-container">

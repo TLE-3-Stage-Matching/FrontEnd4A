@@ -1,64 +1,64 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import {Link} from 'react-router-dom';
+import {AppContext} from '../context/AppContext';
+import '../components/companydashboard.css'; // For general layout
 import '../components/Dashboard.css';
 
 const CoordinatorDashboard = () => {
-    const [filter, setFilter] = useState('Alle');
 
-    const students = [
-        {
-            id: '1082617',
-            name: 'Student A',
-            role: 'Junior Frontend developer',
-            company: 'Techstart amsterdam',
-            match: 87,
-            date: '2026-05-07',
-            status: 'Te beoordelen',
-            statusClass: 'status-pending'
-        },
-        {
-            id: '1089090',
-            name: 'Student B',
-            role: 'UX/UI Design Stagiar',
-            company: 'Creative studio Rotterdam',
-            match: 72,
-            date: '2026-05-08',
-            status: 'Goedgekeurd',
-            statusClass: 'status-approved'
-        },
-        {
-            id: '1088876',
-            name: 'Student C',
-            role: 'Senior developer Stagiar',
-            company: 'EliteTech Corp',
-            match: 65,
-            date: '2026-05-09',
-            status: 'Te beoordelen',
-            statusClass: 'status-pending'
-        },
-        {
-            id: '1082656',
-            name: 'Student D',
-            role: 'Full stack developer',
-            company: 'InnovatieTech Utrecht',
-            match: 55,
-            date: '2026-05-10',
-            status: 'Afgewezen',
-            statusClass: 'status-rejected'
-        },
-        {
-            id: '1081525',
-            name: 'Student E',
-            role: 'AI Engineer Stagiar',
-            company: 'PrestigeIT',
-            match: 91,
-            date: '2026-05-11',
-            status: 'Te beoordelen',
-            statusClass: 'status-pending'
-        },
-    ];
+    const [filter, setFilter] = useState('Alle');
+    // --- CONTEXT ---
+    const {createStudentUser, isLoading} = useContext(AppContext);
+
+    // --- STATE ---
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
+
+    // --- EFFECTS ---
+    useEffect(() => {
+        if (!isLoading) {
+            console.log('Coordinator dashboard ingeladen!');
+        }
+    }, [isLoading]);
+
+    useEffect(() => {
+        if (successMessage) {
+            const timer = setTimeout(() => setSuccessMessage(''), 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [successMessage]);
+
+    // --- HANDLERS ---
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        console.log("Gedrukt op: Account Aanmaken");
+
+        const payload = {
+            role: "student",
+            email: email,
+            password: password,
+            first_name: firstName,
+            last_name: lastName,
+        };
+
+        await createStudentUser(payload);
+
+        setFirstName('');
+        setLastName('');
+        setEmail('');
+        setPassword('');
+        setSuccessMessage("Student account succesvol aangemaakt. Geef de inloggegevens door aan de student.");
+    };
 
     const filteredStudents = students.filter(s => filter === 'Alle' || s.status === filter);
+
+    // --- RENDER ---
+    if (isLoading) {
+        return <div className="dashboard-container"><h1>Aan het laden...</h1></div>;
+    }
 
     return (
         <div className="dashboard-container">

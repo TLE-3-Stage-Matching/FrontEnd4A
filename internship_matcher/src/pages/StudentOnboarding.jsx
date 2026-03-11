@@ -5,16 +5,19 @@ import '../components/studentregister.css'; // Reusing the CSS file for similar 
 
 const StudentOnboarding = () => {
     // --- HOOKS & CONTEXT ---
-    const {tags: allAvailableTags, isLoading, syncStudentTags} = useContext(AppContext);
+    const {tags: allAvailableTags, studentProfile, isLoading, syncStudentTags} = useContext(AppContext);
     const [selectedTagIds, setSelectedTagIds] = useState(new Set());
     const navigate = useNavigate();
 
     // --- EFFECTS ---
+    // Pre-populate selected skills when the component loads or studentProfile changes
     useEffect(() => {
-        if (!isLoading) {
-            console.log('Student onboarding pagina ingeladen!');
+        if (studentProfile && studentProfile.student_tags) {
+            const initialIds = studentProfile.student_tags.map(tagInfo => tagInfo.tag.id);
+            setSelectedTagIds(new Set(initialIds));
+            console.log('Onboarding pagina: bestaande skills ingeladen.', initialIds);
         }
-    }, [isLoading]);
+    }, [studentProfile]);
 
     // --- HANDLERS ---
     const handleTagClick = (tagId) => {
@@ -25,27 +28,27 @@ const StudentOnboarding = () => {
             newSelectedTagIds.add(tagId);
         }
         setSelectedTagIds(newSelectedTagIds);
-        console.log(`Tag geklikt: ${tagId}. Geselecteerde tags:`, Array.from(newSelectedTagIds));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("Gedrukt op: Sla vaardigheden op en ga naar Dashboard");
+        console.log("Gedrukt op: Sla vaardigheden op");
 
         const tagsPayload = Array.from(selectedTagIds).map(id => ({
             tag_id: id,
-            is_active: true,
-            weight: 5
+            is_active: true, // Assuming active when selected
+            weight: 5 // Default weight
         }));
 
         await syncStudentTags(tagsPayload);
 
+        // Always navigate back to the dashboard after saving
         navigate('/dashboard/student');
     };
 
     // --- RENDER LOGIC ---
-    if (isLoading) {
-        return <div className="registration-container"><h1>Aan het laden...</h1></div>;
+    if (isLoading || !allAvailableTags) {
+        return <div className="registration-container"><h1>Vaardigheden worden geladen...</h1></div>;
     }
 
     const selectedTags = allAvailableTags.filter(tag => selectedTagIds.has(tag.id));
@@ -54,17 +57,13 @@ const StudentOnboarding = () => {
     return (
         <div className="registration-container">
             <div className="header-section">
-                <h1>Welkom! Vul je vaardigheden aan</h1>
+                <h1>Mijn Vaardigheden</h1>
                 <p>Selecteer de skills die bij jou passen. Dit helpt ons de beste matches te vinden.</p>
-            </div>
-
-            <div className="privacy-box">
-                {/* ... privacy box content ... */}
             </div>
 
             <form onSubmit={handleSubmit}>
                 <div className="form-group">
-                    <label>Mijn Vaardigheden</label>
+                    <label>Mijn Geselecteerde Skills</label>
                     <div className="tag-container selected-tags">
                         {selectedTags.length > 0 ? selectedTags.map(tag => (
                             <div key={tag.id} className="skill-tag" onClick={() => handleTagClick(tag.id)}>
@@ -76,7 +75,7 @@ const StudentOnboarding = () => {
                 </div>
 
                 <div className="form-group">
-                    <label>Beschikbare Vaardigheden</label>
+                    <label>Beschikbare Skills</label>
                     <div className="tag-container">
                         {availableTags.map(tag => (
                             <div key={tag.id} className="skill-tag available-tag"
@@ -89,7 +88,7 @@ const StudentOnboarding = () => {
                 </div>
 
                 <button type="submit" className="submit-btn">
-                    Sla vaardigheden op en ga naar Dashboard
+                    Sla Vaardigheden Op
                 </button>
             </form>
         </div>
