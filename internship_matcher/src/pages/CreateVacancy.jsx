@@ -17,7 +17,6 @@ const SkillToggle = ({type, onToggle}) => (
 
 const CreateVacancy = () => {
     // --- HOOKS & CONTEXT ---
-    const {vacancies, tags: availableTags, isLoading, addVacancy, updateVacancy} = useContext(AppContext);
     const {vacancies, tags: availableTags, allStudents, isLoading, addVacancy, updateVacancy} = useContext(AppContext);
     const navigate = useNavigate();
     const {id} = useParams();
@@ -38,7 +37,7 @@ const CreateVacancy = () => {
             if (vacancyToEdit) {
                 setTitle(vacancyToEdit.title);
                 setDescription(vacancyToEdit.description || '');
-                setSkills(vacancyToEdit.skills || []); 
+                setSkills(vacancyToEdit.skills || []);
             }
         }
     }, [id, isEditMode, vacancies, isLoading]);
@@ -166,7 +165,7 @@ const CreateVacancy = () => {
                                 skills te veranderen in 'nice-to-have' om meer talent te bereiken.</p>
                         </div>
                     )}
-                    
+
                     <div className="form-group">
                         <label htmlFor="new-skill-input">Nieuwe skill toevoegen</label>
                         <div className="skills-input-container">

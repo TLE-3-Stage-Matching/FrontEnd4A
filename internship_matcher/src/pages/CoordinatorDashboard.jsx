@@ -3,6 +3,7 @@ import {Link} from 'react-router-dom';
 import {AppContext} from '../context/AppContext';
 import '../components/companydashboard.css'; // For general layout
 import '../components/CreateVacancy.css'; // For form styling
+import StudentOverzicht from "../components/StudentOverzicht.jsx";
 
 const CoordinatorDashboard = () => {
     // --- CONTEXT ---
@@ -97,7 +98,9 @@ const CoordinatorDashboard = () => {
                     </div>
                 )}
             </div>
+            <StudentOverzicht/>
         </div>
+
     );
 }
 
