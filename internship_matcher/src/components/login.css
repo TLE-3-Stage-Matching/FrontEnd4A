@@ -136,3 +136,11 @@ html, body, #root {
 .submit-button:hover {
     background-color: #333;
 }
+
+.register-link {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e9ecef;
+    text-align: center;
+    font-size: 0.9rem;
+}

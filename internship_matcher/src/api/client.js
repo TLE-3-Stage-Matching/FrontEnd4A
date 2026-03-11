@@ -52,7 +52,7 @@ export const apiRequest = async (path, options = {}) => {
         } catch (error) {
             console.error("Failed to refresh token:", error.message);
             localStorage.removeItem('token');
-            window.location.href = '/login';
+            window.location.href = '/login'; 
             throw error;
         }
     }
@@ -82,8 +82,21 @@ export const login = (email, password) => apiRequest('/auth/login', {
 export const logout = () => apiRequest('/auth/logout', {method: 'POST'});
 export const getMe = () => apiRequest('/auth/me');
 
+export const registerCompany = (payload) => apiRequest('/auth/register/company', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+});
+
+export const registerCoordinator = (payload) => apiRequest('/auth/register/coordinator', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+});
+
 // === Tags ===
 export const getTags = () => apiRequest('/tags');
+
+// === Public Data ===
+export const getPublicVacancies = () => apiRequest('/vacancies'); // Added this function
 
 // === Vacancies (Company) ===
 export const getCompanyVacancies = () => apiRequest('/company/vacancies');

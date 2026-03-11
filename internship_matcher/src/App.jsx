@@ -6,6 +6,8 @@ import * as api from './api/client.js';
 // --- Component Imports ---
 import HomePage from "./pages/Home.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
+import CompanyRegistrationPage from "./pages/CompanyRegistrationPage.jsx";
+import CoordinatorRegistrationPage from "./pages/CoordinatorRegistrationPage.jsx";
 import CompanyDashboard from "./pages/company_dashboard.jsx";
 import StudentDashboard from "./pages/StudentDashboard.jsx";
 import CoordinatorDashboard from "./pages/CoordinatorDashboard.jsx";
@@ -15,7 +17,6 @@ import StudentOnboarding from "./pages/StudentOnboarding.jsx";
 import VacancyListings from "./pages/VacancyListings.jsx";
 import './App.css';
 
-// --- Private Route Component ---
 const PrivateRoute = ({children}) => {
     const {isAuthenticated, isLoading} = useContext(AppContext);
     if (isLoading) return <div className="dashboard-container"><h1>Sessie controleren...</h1></div>;
@@ -23,7 +24,6 @@ const PrivateRoute = ({children}) => {
     return children;
 };
 
-// --- Layout Component (The App's Brain) ---
 const Layout = () => {
     const [user, setUser] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -54,18 +54,48 @@ const Layout = () => {
         validateSession();
     }, []);
 
-    // When user logs in, fetch their data and navigate
+    // When user authenticates, fetch data and navigate
     useEffect(() => {
-        if (!user || !isAuthenticated) return;
+        if (!isAuthenticated || !user) return;
 
         const fetchDataAndNavigate = async () => {
-            // ... data fetching logic ...
-            if (user.role === 'student') navigate('/dashboard/student');
-            else if (user.role === 'company') navigate('/dashboard/bedrijf');
-            else if (user.role === 'coordinator') navigate('/dashboard/coordinator');
+            setIsLoading(true);
+            try {
+                // Collect all data first
+                const tagsResult = await api.getTags();
+                const newAppData = {tags: tagsResult.data};
+
+                if (user.role === 'student') {
+                    const profileResult = await api.getStudentProfile();
+                    newAppData.studentProfile = profileResult.data;
+
+                    if (profileResult.data.student_tags && profileResult.data.student_tags.length > 0) {
+                        const vacanciesResult = await api.getPublicVacancies();
+                        newAppData.vacancies = vacanciesResult.data;
+                        setAppData(newAppData); // Single state update
+                        navigate('/dashboard/student');
+                    } else {
+                        setAppData(newAppData); // Single state update
+                        navigate('/onboarding/student');
+                    }
+                } else if (user.role === 'company') {
+                    const vacanciesResult = await api.getCompanyVacancies();
+                    newAppData.vacancies = vacanciesResult.data;
+                    setAppData(newAppData); // Single state update
+                    navigate('/dashboard/bedrijf');
+                } else {
+                    setAppData(newAppData); // Single state update
+                    navigate('/dashboard/coordinator');
+                }
+            } catch (error) {
+                console.error("An error occurred during data fetching:", error);
+            } finally {
+                setIsLoading(false);
+            }
         };
+
         fetchDataAndNavigate();
-    }, [user, isAuthenticated, navigate]);
+    }, [user, isAuthenticated]); // navigate is not needed here
 
     // --- Handlers ---
     const handleLogin = async (email, password) => {
@@ -81,56 +111,56 @@ const Layout = () => {
             try {
                 await api.logout();
             } catch (e) {
-                console.error("Logout API call failed, but proceeding.");
+                console.error("Logout API call failed.");
             }
             localStorage.removeItem('token');
             setUser(null);
             setIsAuthenticated(false);
+            setAppData({vacancies: [], tags: [], allStudents: [], studentProfile: null});
+            navigate('/login');
         }
     };
 
-    // Pass-through handlers that call the API
+    const handleSyncStudentTags = async (tagsPayload) => {
+        await api.syncStudentTags(tagsPayload);
+        const {data: updatedProfile} = await api.getStudentProfile();
+        setAppData(prev => ({...prev, studentProfile: updatedProfile}));
+    };
+    
     const contextValue = {
-        user,
-        isAuthenticated,
-        isLoading,
-        login: handleLogin,
-        logout: handleLogout,
-        ...appData,
+        user, isAuthenticated, isLoading, login: handleLogin, logout: handleLogout, ...appData,
         addVacancy: async (data) => {
             const res = await api.createVacancy(data);
             setAppData(prev => ({...prev, vacancies: [...prev.vacancies, res.data]}));
+            navigate('/dashboard/bedrijf');
         },
         updateVacancy: async (id, data) => {
             const res = await api.updateVacancy(id, data);
             setAppData(prev => ({...prev, vacancies: prev.vacancies.map(v => v.id === id ? res.data : v)}));
+            navigate('/dashboard/bedrijf');
         },
         deleteVacancy: async (id) => {
-            await api.deleteVacancy(id);
-            setAppData(prev => ({...prev, vacancies: prev.vacancies.filter(v => v.id !== id)}));
+            if (window.confirm('Weet je zeker dat je deze vacature wilt verwijderen?')) {
+                await api.deleteVacancy(id);
+                setAppData(prev => ({...prev, vacancies: prev.vacancies.filter(v => v.id !== id)}));
+            }
         },
-        syncStudentTags: api.syncStudentTags,
         createStudentUser: api.createStudentUser,
+        syncStudentTags: handleSyncStudentTags,
     };
 
-    return (
-        <AppContext.Provider value={contextValue}>
-            <Outlet/>
-        </AppContext.Provider>
-    );
+    return <AppContext.Provider value={contextValue}><Outlet/></AppContext.Provider>;
 };
 
-// --- Main App & Router ---
 function App() {
     const router = createBrowserRouter([
         {
             element: <Layout/>,
             children: [
-                // Public routes
                 {path: "/", element: <HomePage/>},
                 {path: "/login", element: <LoginPage/>},
-
-                // Protected routes
+                {path: "/register/bedrijf", element: <CompanyRegistrationPage/>},
+                {path: "/register/coordinator", element: <CoordinatorRegistrationPage/>},
                 {path: "/profiel", element: <PrivateRoute><Profile/></PrivateRoute>},
                 {path: "/onboarding/student", element: <PrivateRoute><StudentOnboarding/></PrivateRoute>},
                 {path: "/dashboard/bedrijf", element: <PrivateRoute><CompanyDashboard/></PrivateRoute>},
@@ -142,7 +172,6 @@ function App() {
             ]
         }
     ]);
-
     return <RouterProvider router={router}/>;
 }
 

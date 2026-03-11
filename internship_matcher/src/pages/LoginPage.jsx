@@ -1,5 +1,5 @@
 import React, {useState, useContext} from 'react';
-import {useLocation, useNavigate} from 'react-router-dom';
+import {useLocation, useNavigate, Link} from 'react-router-dom';
 import {AppContext} from '../context/AppContext';
 import '../components/login.css';
 
@@ -8,7 +8,6 @@ const LoginPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // Get the role from the navigation state, with a fallback
     const role = location.state?.role || 'gebruiker';
 
     const [email, setEmail] = useState('');
@@ -22,12 +21,11 @@ const LoginPage = () => {
         setIsLoggingIn(true);
 
         try {
-            // The login function in the context handles token, user state, and navigation
             await login(email, password);
-            // On success, the useEffect in App.jsx will handle navigation
         } catch (err) {
             console.error("Login failed:", err.message);
             setError(err.message || "Login mislukt. Controleer uw gegevens.");
+        } finally {
             setIsLoggingIn(false);
         }
     };
@@ -54,25 +52,13 @@ const LoginPage = () => {
             <form onSubmit={handleSubmit}>
                 <div className="form-group">
                     <label htmlFor="login-email">E-mailadres</label>
-                    <input
-                        id="login-email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        autoComplete="email"
-                    />
+                    <input id="login-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                           required autoComplete="email"/>
                 </div>
                 <div className="form-group">
                     <label htmlFor="login-password">Wachtwoord</label>
-                    <input
-                        id="login-password"
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        autoComplete="current-password"
-                    />
+                    <input id="login-password" type="password" value={password}
+                           onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password"/>
                 </div>
 
                 {error && <p className="error-message" style={{color: '#B02A37'}}>{error}</p>}
@@ -81,6 +67,18 @@ const LoginPage = () => {
                     {isLoggingIn ? 'Inloggen...' : 'Login'}
                 </button>
             </form>
+
+            {role === 'company' && (
+                <div className="register-link">
+                    <p>Nog geen account? <Link to="/register/bedrijf">Registreer uw bedrijf hier</Link>.</p>
+                </div>
+            )}
+
+            {role === 'coordinator' && (
+                <div className="register-link">
+                    <p>Nog geen account? <Link to="/register/coordinator">Registreer hier als coördinator</Link>.</p>
+                </div>
+            )}
         </div>
     );
 };
