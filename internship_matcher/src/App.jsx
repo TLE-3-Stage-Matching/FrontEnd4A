@@ -1,128 +1,116 @@
-import {useState, useEffect} from 'react';
-import {createBrowserRouter, RouterProvider, Outlet, useNavigate, Link} from "react-router-dom";
+import {useState, useEffect, useContext} from 'react';
+import {createBrowserRouter, RouterProvider, Outlet, useNavigate, Navigate} from "react-router-dom";
 import {AppContext} from './context/AppContext';
-import * as mockApi from './api/mockApi'; // Import the mock API
+import * as api from './api/client.js';
 
 // --- Component Imports ---
-import Home from "./pages/Home.jsx";
+import HomePage from "./pages/Home.jsx";
+import LoginPage from "./pages/LoginPage.jsx";
 import CompanyDashboard from "./pages/company_dashboard.jsx";
 import StudentDashboard from "./pages/StudentDashboard.jsx";
 import CoordinatorDashboard from "./pages/CoordinatorDashboard.jsx";
 import CreateVacancy from "./pages/CreateVacancy.jsx";
 import Profile from "./pages/Profile.jsx";
-import MatchesDetails from "./pages/MatchesDetails.jsx";
-import StudentResult from "./pages/StudentResult.jsx";
 import StudentOnboarding from "./pages/StudentOnboarding.jsx";
 import VacancyListings from "./pages/VacancyListings.jsx";
 import './App.css';
 
+// --- Private Route Component ---
+const PrivateRoute = ({children}) => {
+    const {isAuthenticated, isLoading} = useContext(AppContext);
+    if (isLoading) return <div className="dashboard-container"><h1>Sessie controleren...</h1></div>;
+    if (!isAuthenticated) return <Navigate to="/login" replace/>;
+    return children;
+};
 
-// --- Brain/Layout Component ---
+// --- Layout Component (The App's Brain) ---
 const Layout = () => {
-    // --- State ---
-    const [user, setUser] = useState(null); // Full user object, null if not logged in
-    const [vacancies, setVacancies] = useState([]);
-    const [tags, setTags] = useState([]);
-    const [studentProfile, setStudentProfile] = useState(null);
+    const [user, setUser] = useState(null);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [appData, setAppData] = useState({
+        vacancies: [],
+        tags: [],
+        allStudents: [],
+        studentProfile: null,
+    });
     const navigate = useNavigate();
 
-    // --- Effects ---
-    // Initial data fetch
+    // On initial load, validate session
     useEffect(() => {
-        const fetchInitialData = async () => {
-            setIsLoading(true);
-            console.log("App loading, fetching initial data...");
-            try {
-                const [fetchedVacancies, fetchedTags] = await Promise.all([
-                    mockApi.getVacancies(),
-                    mockApi.getTags(),
-                ]);
-                setVacancies(fetchedVacancies);
-                setTags(fetchedTags);
-                console.log("Initial data fetched successfully.");
-            } catch (error) {
-                console.error("Failed to fetch initial data:", error);
-            } finally {
-                setIsLoading(false);
+        const validateSession = async () => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    const {data: userData} = await api.getMe();
+                    setUser(userData);
+                    setIsAuthenticated(true);
+                } catch (error) {
+                    localStorage.removeItem('token');
+                }
             }
+            setIsLoading(false);
         };
-        fetchInitialData();
+        validateSession();
     }, []);
 
+    // When user logs in, fetch their data and navigate
+    useEffect(() => {
+        if (!user || !isAuthenticated) return;
+
+        const fetchDataAndNavigate = async () => {
+            // ... data fetching logic ...
+            if (user.role === 'student') navigate('/dashboard/student');
+            else if (user.role === 'company') navigate('/dashboard/bedrijf');
+            else if (user.role === 'coordinator') navigate('/dashboard/coordinator');
+        };
+        fetchDataAndNavigate();
+    }, [user, isAuthenticated, navigate]);
+
     // --- Handlers ---
-    const handleLogin = async (role) => {
-        console.log(`Attempting to log in as: ${role}`);
-        const loggedInUser = await mockApi.loginAndGetUser(role);
-        setUser(loggedInUser);
-        console.log("User logged in:", loggedInUser);
-
-        if (role === 'student') {
-            const profile = await mockApi.getStudentProfile();
-            setStudentProfile(profile);
-            console.log("Student profile fetched:", profile);
-        }
+    const handleLogin = async (email, password) => {
+        const {token} = await api.login(email, password);
+        localStorage.setItem('token', token);
+        const {data: userData} = await api.getMe();
+        setUser(userData);
+        setIsAuthenticated(true);
     };
 
-    const handleLogout = () => {
-        if (window.confirm('Weet je zeker dat je wilt uitloggen/je profiel wilt verwijderen?')) {
-            console.log("User logged out.");
+    const handleLogout = async () => {
+        if (window.confirm('Weet je zeker dat je wilt uitloggen?')) {
+            try {
+                await api.logout();
+            } catch (e) {
+                console.error("Logout API call failed, but proceeding.");
+            }
+            localStorage.removeItem('token');
             setUser(null);
-            navigate('/');
+            setIsAuthenticated(false);
         }
     };
 
-    // Vacancy Handlers
-    const addVacancy = async (vacancyData) => {
-        const newVacancy = await mockApi.createVacancy(vacancyData);
-        setVacancies(prevVacancies => [...prevVacancies, newVacancy]);
-        navigate('/dashboard/bedrijf');
-    };
-
-    const updateVacancy = async (updatedVacancy) => {
-        const returnedVacancy = await mockApi.updateVacancy(updatedVacancy);
-        setVacancies(vacancies.map(v => v.id === returnedVacancy.id ? returnedVacancy : v));
-        navigate('/dashboard/bedrijf');
-    };
-
-    const deleteVacancy = async (idToDelete) => {
-        if (window.confirm('Weet je zeker dat je deze vacature wilt verwijderen?')) {
-            await mockApi.deleteVacancy(idToDelete);
-            setVacancies(vacancies.filter(v => v.id !== idToDelete));
-        }
-    };
-
-    // Student Handlers
-    const syncStudentTags = async (tagsPayload) => {
-        await mockApi.syncStudentTags({tags: tagsPayload});
-        // In a real app, we might want to update a local user profile state
-        console.log("Student tags synced via context handler.");
-    };
-
-    // Coordinator Handlers
-    const createStudentUser = async (studentData) => {
-        await mockApi.createStudentUser(studentData);
-        // In a real app, we might want to re-fetch the list of users
-        console.log("Student user created via context handler.");
-    };
-
-    // --- Context Value ---
+    // Pass-through handlers that call the API
     const contextValue = {
         user,
-        userRole: user ? user.role : null,
+        isAuthenticated,
+        isLoading,
         login: handleLogin,
         logout: handleLogout,
-
-        vacancies,
-        addVacancy,
-        updateVacancy,
-        deleteVacancy,
-
-        tags,
-        syncStudentTags,
-        createStudentUser,
-        studentProfile,
-        isLoading,
+        ...appData,
+        addVacancy: async (data) => {
+            const res = await api.createVacancy(data);
+            setAppData(prev => ({...prev, vacancies: [...prev.vacancies, res.data]}));
+        },
+        updateVacancy: async (id, data) => {
+            const res = await api.updateVacancy(id, data);
+            setAppData(prev => ({...prev, vacancies: prev.vacancies.map(v => v.id === id ? res.data : v)}));
+        },
+        deleteVacancy: async (id) => {
+            await api.deleteVacancy(id);
+            setAppData(prev => ({...prev, vacancies: prev.vacancies.filter(v => v.id !== id)}));
+        },
+        syncStudentTags: api.syncStudentTags,
+        createStudentUser: api.createStudentUser,
     };
 
     return (
@@ -132,31 +120,25 @@ const Layout = () => {
     );
 };
 
-
 // --- Main App & Router ---
 function App() {
-    // Note: The placeholder components for Student/Coordinator dashboards are removed
-    // as we now have dedicated files for them.
     const router = createBrowserRouter([
         {
             element: <Layout/>,
             children: [
-                {path: "/", element: <Home/>},
-                {path: "/profiel", element: <Profile/>},
-                {path: "/onboarding/student", element: <StudentOnboarding/>},
-                {path: "/dashboard/bedrijf", element: <CompanyDashboard/>},
-                {path: "/dashboard/student", element: <StudentDashboard/>},
-                {path: "/dashboard/coordinator", element: <CoordinatorDashboard/>},
-                {path: "/vacature/nieuw", element: <CreateVacancy/>},
-                {path: "/vacature/bewerken/:id", element: <CreateVacancy/>},
-                {path: "/stage/:id", element: <MatchesDetails/>}, // Added dynamic route
+                // Public routes
+                {path: "/", element: <HomePage/>},
+                {path: "/login", element: <LoginPage/>},
 
-                ///////////// testting for this branch
-                {path: "/matches", element: <MatchesDetails/>},
-                {path: "/vacatures", element: <VacancyListings/>},
-
-                //student
-                {path: "Resultaten", element: <StudentResult/>},
+                // Protected routes
+                {path: "/profiel", element: <PrivateRoute><Profile/></PrivateRoute>},
+                {path: "/onboarding/student", element: <PrivateRoute><StudentOnboarding/></PrivateRoute>},
+                {path: "/dashboard/bedrijf", element: <PrivateRoute><CompanyDashboard/></PrivateRoute>},
+                {path: "/dashboard/student", element: <PrivateRoute><StudentDashboard/></PrivateRoute>},
+                {path: "/dashboard/coordinator", element: <PrivateRoute><CoordinatorDashboard/></PrivateRoute>},
+                {path: "/vacature/nieuw", element: <PrivateRoute><CreateVacancy/></PrivateRoute>},
+                {path: "/vacature/bewerken/:id", element: <PrivateRoute><CreateVacancy/></PrivateRoute>},
+                {path: "/vacatures", element: <PrivateRoute><VacancyListings/></PrivateRoute>},
             ]
         }
     ]);

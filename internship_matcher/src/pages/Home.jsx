@@ -1,10 +1,8 @@
-// It's giving "Choose your player". This is where the journey begins.
 import React, {useContext, useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {AppContext} from '../context/AppContext';
 
 // --- SVG Icons ---
-// Simple, clean icons that do the job.
 const StudentIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
          strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" role="img" aria-labelledby="student-icon-title">
@@ -32,27 +30,23 @@ const CoordinatorIcon = () => (
     </svg>
 );
 
-
-const Home = () => {
-    // We need the login function from the context to tell the app who we are.
-    const {login} = useContext(AppContext);
+const HomePage = () => {
+    const {isAuthenticated, user, isLoading} = useContext(AppContext);
     const navigate = useNavigate();
 
+    // If user is already logged in, redirect them to their dashboard
     useEffect(() => {
-        console.log('Home pagina (rolkeuze) ingeladen!');
-    }, []);
-
-    const handleRoleSelect = async (role) => {
-        console.log(`Gedrukt op rolkeuze: ${role}`);
-        await login(role);
-
-        if (role === 'student') {
-            navigate('/onboarding/student');
-        } else {
-            // The 'bedrijf' role is used in the path, not 'company'
-            const dashboardRole = role === 'company' ? 'bedrijf' : role;
-            navigate(`/dashboard/${dashboardRole}`);
+        if (!isLoading && isAuthenticated && user) {
+            if (user.role === 'student') navigate('/dashboard/student');
+            else if (user.role === 'company') navigate('/dashboard/bedrijf');
+            else if (user.role === 'coordinator') navigate('/dashboard/coordinator');
         }
+    }, [isAuthenticated, user, isLoading, navigate]);
+
+    // Navigate to login page, passing the role for display purposes
+    const handleRoleSelect = (role) => {
+        console.log(`Rol geselecteerd, navigeren naar login: ${role}`);
+        navigate('/login', {state: {role}});
     };
 
     return (
@@ -81,4 +75,4 @@ const Home = () => {
     );
 };
 
-export default Home;
+export default HomePage;
