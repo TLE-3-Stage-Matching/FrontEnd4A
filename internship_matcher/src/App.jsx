@@ -16,6 +16,9 @@ import StudentOnboarding from "./pages/StudentOnboarding.jsx";
 import VacancyListings from "./pages/VacancyListings.jsx";
 import CreateStudent from "./pages/CreateNewStudent.jsx";
 import './App.css';
+import DetailTestButton from "./pages/DetailTestButton.jsx";
+import matchesDetails from "./components/MatchesDetails.jsx";
+import MatchesDetails from "./components/MatchesDetails.jsx";
 import CreateNewStudent from "./pages/CreateNewStudent.jsx";
 import StudentApplications from "./components/StudentApplications.jsx";
 
@@ -159,6 +162,11 @@ function App() {
                 {path: "/vacatures", element: <VacancyListings/>},
 
                 //student
+                {path: "resultaten", element: <StudentResult/>},
+
+                //details
+                {path: "/DetailsTest", element: <DetailTestButton/>},
+                {path: "matchesdetails", element: <MatchesDetails/>}
                 {path: "Resultaten", element: <StudentResult/>},
                 {path: "/vacature/:vacancyId/kandidaten", element: <StudentApplications/>},
             ]
