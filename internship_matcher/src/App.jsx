@@ -10,6 +10,7 @@ import StudentDashboard from "./pages/StudentDashboard.jsx";
 import CoordinatorDashboard from "./pages/CoordinatorDashboard.jsx";
 import CreateVacancy from "./pages/CreateVacancy.jsx";
 import Profile from "./pages/Profile.jsx";
+import MatchesDetails from "./pages/MatchesDetails.jsx";
 import StudentResult from "./pages/StudentResult.jsx";
 import StudentOnboarding from "./pages/StudentOnboarding.jsx";
 import VacancyListings from "./pages/VacancyListings.jsx";
@@ -148,6 +149,10 @@ function App() {
                 {path: "/dashboard/coordinator", element: <CoordinatorDashboard/>},
                 {path: "/vacature/nieuw", element: <CreateVacancy/>},
                 {path: "/vacature/bewerken/:id", element: <CreateVacancy/>},
+                {path: "/stage/:id", element: <MatchesDetails/>}, // Added dynamic route
+
+                ///////////// testting for this branch
+                {path: "/matches", element: <MatchesDetails/>},
                 {path: "/vacatures", element: <VacancyListings/>},
 
                 //student
