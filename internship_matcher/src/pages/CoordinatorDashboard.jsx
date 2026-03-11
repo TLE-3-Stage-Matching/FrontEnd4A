@@ -6,7 +6,7 @@ import '../components/CreateVacancy.css'; // For form styling
 
 const CoordinatorDashboard = () => {
     // --- CONTEXT ---
-    const {createStudentUser, isLoading} = useContext(AppContext);
+    const {createStudentUser, isLoading, logout} = useContext(AppContext);
 
     // --- STATE ---
     const [firstName, setFirstName] = useState('');
@@ -60,8 +60,10 @@ const CoordinatorDashboard = () => {
         <div className="dashboard-container">
             <header className="header-row">
                 <h1>Coordinator Dashboard</h1>
-                <Link to="/profiel" className="btn-outline"
-                      onClick={() => console.log('Gedrukt op: Profiel knop')}>Profiel</Link>
+                <div className="header-actions">
+                    <Link to="/profiel" className="btn-outline">Profiel</Link>
+                    <button onClick={logout} className="btn-logout">Uitloggen</button>
+                </div>
             </header>
 
             <div className="form-section" style={{maxWidth: '600px', margin: '40px auto'}}>
