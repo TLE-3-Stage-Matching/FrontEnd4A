@@ -191,6 +191,7 @@
     color: #6C757D;
     transition: color 0.2s ease;
 }
+
 .remove-skill-btn:hover {
     color: #212529;
 }

@@ -44,20 +44,12 @@ const CreateVacancy = () => {
     // Effect to calculate the live match count whenever skills change
     useEffect(() => {
         if (isLoading || !allStudents) return;
-
-        const mustHaveIds = skills
-            .filter(s => s.type === 'must' && s.id)
-            .map(s => s.id);
-
+        const mustHaveIds = skills.filter(s => s.type === 'must' && s.id).map(s => s.id);
         if (mustHaveIds.length === 0) {
             setMatchCount(allStudents.length);
             return;
         }
-
-        const matchingStudents = allStudents.filter(student => {
-            return mustHaveIds.every(mustId => student.skills.has(mustId));
-        });
-
+        const matchingStudents = allStudents.filter(student => mustHaveIds.every(mustId => student.skills.has(mustId)));
         setMatchCount(matchingStudents.length);
     }, [skills, allStudents, isLoading]);
 
@@ -108,7 +100,6 @@ const CreateVacancy = () => {
         return <div className="dashboard-container"><h1>Aan het laden...</h1></div>;
     }
 
-    // --- RENDER ---
     const renderSkillList = (type) => (
         skills
             .filter(skill => skill.type === type)
@@ -132,7 +123,6 @@ const CreateVacancy = () => {
                 </button>
                 <h1>{isEditMode ? 'Vacature Bewerken' : 'Nieuwe Vacature'}</h1>
             </div>
-
             <form onSubmit={handleSubmit}>
                 <div className="form-section">
                     <h2>Basisinformatie</h2>
@@ -147,7 +137,6 @@ const CreateVacancy = () => {
                                   onChange={(e) => setDescription(e.target.value)}></textarea>
                     </div>
                 </div>
-
                 <div className="form-section">
                     <div className="skills-header">
                         <h2>Vereiste Vaardigheden</h2>
@@ -157,7 +146,6 @@ const CreateVacancy = () => {
                             </div>
                         )}
                     </div>
-
                     {matchCount !== null && matchCount < 5 && (
                         <div className="bias-tip">
                             <p><strong>Bias Tip:</strong> Je eisen zijn erg streng. Overweeg om sommige 'must-have'
