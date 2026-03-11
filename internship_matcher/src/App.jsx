@@ -17,6 +17,7 @@ import VacancyListings from "./pages/VacancyListings.jsx";
 import CreateStudent from "./pages/CreateNewStudent.jsx";
 import './App.css';
 import CreateNewStudent from "./pages/CreateNewStudent.jsx";
+import StudentApplications from "./components/StudentApplications.jsx";
 
 
 // --- Brain/Layout Component ---
@@ -154,12 +155,12 @@ function App() {
                 {path: "/stage/:id", element: <MatchesDetails/>},
                 {path: "/create/student", element: <CreateNewStudent/>},
 
-                ///////////// testting for this branch
                 {path: "/matches", element: <MatchesDetails/>},
                 {path: "/vacatures", element: <VacancyListings/>},
 
                 //student
                 {path: "Resultaten", element: <StudentResult/>},
+                {path: "/vacature/:vacancyId/kandidaten", element: <StudentApplications/>},
             ]
         }
     ]);

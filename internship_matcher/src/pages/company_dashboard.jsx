@@ -3,8 +3,16 @@ import React, {useState, useContext, useEffect} from 'react';
 import {useNavigate, Link} from 'react-router-dom';
 import {AppContext} from '../context/AppContext';
 import '../components/companydashboard.css';
+import StudentApplications from "../components/StudentApplications.jsx";
 
+const vacancies = [
+    {id: 1, title: 'Frontend Developer Stagiair', applications: 12, matches: 8},
+    {id: 2, title: 'UX/UI Design Stage', applications: 5, matches: 5},
+    {id: 3, title: 'Backend Developer Stage', applications: 2, matches: 1},
+];
 const CompanyDashboard = () => {
+
+
     // --- HOOKS & CONTEXT ---
     const {vacancies, deleteVacancy, logout} = useContext(AppContext);
     const navigate = useNavigate();
@@ -87,8 +95,10 @@ const CompanyDashboard = () => {
                             <h3>{vacancy.title} <span className="badge">Actief</span></h3>
                             <p>{vacancy.applications} sollicitaties | {vacancy.matches} AI Matches</p>
                             <button
-                                onClick={() => console.log(`Gedrukt op: Bekijk kandidaten voor vacature: "${vacancy.title}"`)}
-                                className="btn-outline">BEKIJK KANDIDATEN
+                                className="btn btn-secondary"
+                                onClick={() => navigate(`/vacature/${vacancy.id}/kandidaten`)}
+                            >
+                                Bekijk Kandidaten
                             </button>
                         </div>
                         <div className="actions">
@@ -106,7 +116,9 @@ const CompanyDashboard = () => {
                     </div>
                 ))}
             </div>
+           
         </div>
+
     );
 };
 
