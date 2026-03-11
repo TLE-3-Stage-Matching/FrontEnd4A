@@ -14,7 +14,9 @@ import MatchesDetails from "./pages/MatchesDetails.jsx";
 import StudentResult from "./pages/StudentResult.jsx";
 import StudentOnboarding from "./pages/StudentOnboarding.jsx";
 import VacancyListings from "./pages/VacancyListings.jsx";
+import CreateStudent from "./pages/CreateNewStudent.jsx";
 import './App.css';
+import CreateNewStudent from "./pages/CreateNewStudent.jsx";
 
 
 // --- Brain/Layout Component ---
@@ -149,7 +151,8 @@ function App() {
                 {path: "/dashboard/coordinator", element: <CoordinatorDashboard/>},
                 {path: "/vacature/nieuw", element: <CreateVacancy/>},
                 {path: "/vacature/bewerken/:id", element: <CreateVacancy/>},
-                {path: "/stage/:id", element: <MatchesDetails/>}, // Added dynamic route
+                {path: "/stage/:id", element: <MatchesDetails/>},
+                {path: "/create/student", element: <CreateNewStudent/>},
 
                 ///////////// testting for this branch
                 {path: "/matches", element: <MatchesDetails/>},

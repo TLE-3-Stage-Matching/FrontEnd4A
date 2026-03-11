@@ -1,104 +1,137 @@
-import React, {useState, useEffect, useContext} from 'react';
+import React, {useState} from 'react';
 import {Link} from 'react-router-dom';
-import {AppContext} from '../context/AppContext';
-import '../components/companydashboard.css'; // For general layout
-import '../components/CreateVacancy.css'; // For form styling
+import '../components/Dashboard.css';
 
 const CoordinatorDashboard = () => {
-    // --- CONTEXT ---
-    const {createStudentUser, isLoading} = useContext(AppContext);
+    const [filter, setFilter] = useState('Alle');
 
-    // --- STATE ---
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [successMessage, setSuccessMessage] = useState('');
+    const students = [
+        {
+            id: '1082617',
+            name: 'Student A',
+            role: 'Junior Frontend developer',
+            company: 'Techstart amsterdam',
+            match: 87,
+            date: '2026-05-07',
+            status: 'Te beoordelen',
+            statusClass: 'status-pending'
+        },
+        {
+            id: '1089090',
+            name: 'Student B',
+            role: 'UX/UI Design Stagiar',
+            company: 'Creative studio Rotterdam',
+            match: 72,
+            date: '2026-05-08',
+            status: 'Goedgekeurd',
+            statusClass: 'status-approved'
+        },
+        {
+            id: '1088876',
+            name: 'Student C',
+            role: 'Senior developer Stagiar',
+            company: 'EliteTech Corp',
+            match: 65,
+            date: '2026-05-09',
+            status: 'Te beoordelen',
+            statusClass: 'status-pending'
+        },
+        {
+            id: '1082656',
+            name: 'Student D',
+            role: 'Full stack developer',
+            company: 'InnovatieTech Utrecht',
+            match: 55,
+            date: '2026-05-10',
+            status: 'Afgewezen',
+            statusClass: 'status-rejected'
+        },
+        {
+            id: '1081525',
+            name: 'Student E',
+            role: 'AI Engineer Stagiar',
+            company: 'PrestigeIT',
+            match: 91,
+            date: '2026-05-11',
+            status: 'Te beoordelen',
+            statusClass: 'status-pending'
+        },
+    ];
 
-    // --- EFFECTS ---
-    useEffect(() => {
-        if (!isLoading) {
-            console.log('Coordinator dashboard ingeladen!');
-        }
-    }, [isLoading]);
-
-    useEffect(() => {
-        if (successMessage) {
-            const timer = setTimeout(() => setSuccessMessage(''), 5000);
-            return () => clearTimeout(timer);
-        }
-    }, [successMessage]);
-
-    // --- HANDLERS ---
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        console.log("Gedrukt op: Account Aanmaken");
-
-        const payload = {
-            role: "student",
-            email: email,
-            password: password,
-            first_name: firstName,
-            last_name: lastName,
-        };
-
-        await createStudentUser(payload);
-
-        setFirstName('');
-        setLastName('');
-        setEmail('');
-        setPassword('');
-        setSuccessMessage("Student account succesvol aangemaakt. Geef de inloggegevens door aan de student.");
-    };
-
-    // --- RENDER ---
-    if (isLoading) {
-        return <div className="dashboard-container"><h1>Aan het laden...</h1></div>;
-    }
+    const filteredStudents = students.filter(s => filter === 'Alle' || s.status === filter);
 
     return (
         <div className="dashboard-container">
-            <header className="header-row">
-                <h1>Coordinator Dashboard</h1>
-                <Link to="/profiel" className="btn-outline"
-                      onClick={() => console.log('Gedrukt op: Profiel knop')}>Profiel</Link>
+            <header className="top-bar">
+                <Link to="/" className="btn-add-student btn-back">
+                    ← Terug naar homepage
+                </Link>
+                <Link to="/create/student" className="btn-add-student">
+                    Student toevoegen
+                </Link>
+                <div className="user-profile">
+                    <span>Jolene Van Curacao</span>
+                    <img src="https://i.pravatar.cc/150?u=jolene" alt="Profile" className="profile-img"/>
+                </div>
             </header>
 
-            <div className="form-section" style={{maxWidth: '600px', margin: '40px auto'}}>
-                <h2>Student Account Aanmaken</h2>
-
-                <form onSubmit={handleSubmit}>
-                    <div className="form-group">
-                        <label htmlFor="first_name">Voornaam</label>
-                        <input type="text" id="first_name" value={firstName}
-                               onChange={(e) => setFirstName(e.target.value)} required/>
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="last_name">Achternaam</label>
-                        <input type="text" id="last_name" value={lastName} onChange={(e) => setLastName(e.target.value)}
-                               required/>
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="email">E-mailadres</label>
-                        <input type="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                               required/>
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="password">Wachtwoord</label>
-                        <input type="password" id="password" value={password}
-                               onChange={(e) => setPassword(e.target.value)} required minLength="8"/>
-                    </div>
-                    <button type="submit" className="btn-primary" style={{width: '100%'}}>Account Aanmaken</button>
-                </form>
-
-                {successMessage && (
-                    <div className="success-message" style={{marginTop: '20px', color: 'green', fontWeight: 'bold'}}>
-                        {successMessage}
-                    </div>
-                )}
+            <div className="info-banner">
+                Human-in-the-loop: de AI genereert match-voorstellen maar jij valideert deze voordat het definitief
+                worden. Je behoudt altijd de volledige controle.
             </div>
+
+            <section className="stats-grid">
+                <div className="stat-card">
+                    <span>Bias waarschuwingen</span>
+                    <span className="stat-number">1</span>
+                </div>
+                <div className="stat-card">
+                    <span>Te beoordelen</span>
+                    <span className="stat-number">3</span>
+                </div>
+                <div className="stat-card">
+                    <span>Goedgekeurd</span>
+                    <span className="stat-number">2</span>
+                </div>
+                <div className="stat-card purple">
+                    <span>Totale matches</span>
+                    <span className="stat-number">{students.length}</span>
+                </div>
+            </section>
+
+            <nav className="filter-bar">
+                {['Alle', 'Te beoordelen', 'Goedgekeurd', 'Afgewezen'].map((item) => (
+                    <div
+                        key={item}
+                        className={`filter-item ${filter === item ? 'active' : ''}`}
+                        onClick={() => setFilter(item)}
+                    >
+                        {item}
+                    </div>
+                ))}
+            </nav>
+
+            <main className="student-list">
+                {filteredStudents.map((student) => (
+                    <div key={student.id} className="student-row">
+                        <div className="student-id-box">
+                            {student.name} {student.id}
+                        </div>
+                        <div className="job-info">
+                            <strong>{student.role}</strong><br/>
+                            <small style={{color: '#888'}}>{student.company}</small>
+                        </div>
+                        <div className="match-pct">{student.match}%</div>
+                        <div className="date">{student.date}</div>
+                        <div className={`status-label ${student.statusClass}`}>
+                            {student.status}
+                        </div>
+                        <Link to="#" className="view-link">Bekijk</Link>
+                    </div>
+                ))}
+            </main>
         </div>
     );
-}
+};
 
 export default CoordinatorDashboard;
