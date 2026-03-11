@@ -17,7 +17,7 @@ const SkillToggle = ({type, onToggle}) => (
 
 const CreateVacancy = () => {
     // --- HOOKS & CONTEXT ---
-    const {vacancies, tags: availableTags, isLoading, addVacancy, updateVacancy} = useContext(AppContext);
+    const {vacancies, tags: availableTags, allStudents, isLoading, addVacancy, updateVacancy} = useContext(AppContext);
     const navigate = useNavigate();
     const {id} = useParams();
     const isEditMode = Boolean(id);
@@ -25,24 +25,34 @@ const CreateVacancy = () => {
     // --- STATE ---
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    const [skills, setSkills] = useState([]); // This will hold objects like {id?, name, type}
+    const [skills, setSkills] = useState([]);
     const [currentSkill, setCurrentSkill] = useState('');
+    const [matchCount, setMatchCount] = useState(null);
 
     // --- EFFECTS ---
+    // Effect to pre-fill the form in edit mode
     useEffect(() => {
         if (!isLoading && isEditMode) {
-            console.log(`Vacature bewerken pagina ingeladen voor vacature ID: ${id}!`);
             const vacancyToEdit = vacancies.find(v => v.id === parseInt(id));
             if (vacancyToEdit) {
                 setTitle(vacancyToEdit.title);
                 setDescription(vacancyToEdit.description || '');
-                // The local skills state should be compatible with the API structure
                 setSkills(vacancyToEdit.skills || []); 
             }
-        } else if (!isLoading) {
-            console.log('Nieuwe vacature pagina ingeladen!');
         }
     }, [id, isEditMode, vacancies, isLoading]);
+
+    // Effect to calculate the live match count whenever skills change
+    useEffect(() => {
+        if (isLoading || !allStudents) return;
+        const mustHaveIds = skills.filter(s => s.type === 'must' && s.id).map(s => s.id);
+        if (mustHaveIds.length === 0) {
+            setMatchCount(allStudents.length);
+            return;
+        }
+        const matchingStudents = allStudents.filter(student => mustHaveIds.every(mustId => student.skills.has(mustId)));
+        setMatchCount(matchingStudents.length);
+    }, [skills, allStudents, isLoading]);
 
     // --- HANDLERS ---
     const handleAddSkill = () => {
@@ -51,61 +61,41 @@ const CreateVacancy = () => {
             setCurrentSkill('');
             return;
         }
-        console.log(`Gedrukt op: Voeg skill toe: "${skillName}"`);
-
-        // Check if the skill exists in the available tags from the API
         const existingTag = availableTags.find(tag => tag.name.toLowerCase() === skillName.toLowerCase());
-
-        let newSkill;
-        if (existingTag) {
-            // It's a known tag, add it with its ID
-            newSkill = {id: existingTag.id, name: existingTag.name, type: 'must'};
-        } else {
-            // It's a new tag, add it by name only
-            newSkill = {name: skillName, type: 'must'};
-        }
-        
+        const newSkill = existingTag ? {id: existingTag.id, name: existingTag.name, type: 'must'} : {
+            name: skillName,
+            type: 'must'
+        };
         setSkills([...skills, newSkill]);
         setCurrentSkill('');
     };
 
     const handleRemoveSkill = (skillNameToRemove) => {
-        console.log(`Gedrukt op: Verwijder skill "${skillNameToRemove}"`);
         setSkills(skills.filter(skill => skill.name !== skillNameToRemove));
     };
 
     const handleToggleSkillType = (skillNameToToggle) => {
-        const skill = skills.find(s => s.name === skillNameToToggle);
-        if (skill) {
-            const newType = skill.type === 'must' ? 'nice' : 'must';
-            console.log(`Gedrukt op: Toggle skill "${skillNameToToggle}" naar "${newType}"`);
-            setSkills(skills.map(s => s.name === skillNameToToggle ? {...s, type: newType} : s));
-        }
+        setSkills(skills.map(s => s.name === skillNameToToggle ? {
+            ...s,
+            type: s.type === 'must' ? 'nice' : 'must'
+        } : s));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Gedrukt op: Formulier opslaan/plaatsen');
-
-        // Transform local skills state into the format the API expects
         const apiTags = skills.map(skill => {
-            const tagPayload = {};
-            if (skill.id) {
-                tagPayload.id = skill.id;
-            } else {
+            const tagPayload = {importance: skill.type === 'must' ? 1 : 0};
+            if (skill.id) tagPayload.id = skill.id;
+            else {
                 tagPayload.name = skill.name;
-                tagPayload.tag_type = 'skill'; // default new tags to 'skill'
+                tagPayload.tag_type = 'skill';
             }
-            // Map our 'must'/'nice' to a numerical importance or another API field
-            // The API doc mentions 'importance', let's use that. 1 for must, 0 for nice.
-            tagPayload.importance = skill.type === 'must' ? 1 : 0;
             return tagPayload;
         });
-
         const vacancyData = {title, description, tags: apiTags};
-        
+
         if (isEditMode) {
-            await updateVacancy({...vacancyData, id: parseInt(id)});
+            await updateVacancy(parseInt(id), vacancyData);
         } else {
             await addVacancy(vacancyData);
         }
@@ -115,9 +105,8 @@ const CreateVacancy = () => {
         return <div className="dashboard-container"><h1>Aan het laden...</h1></div>;
     }
 
-    // --- RENDER ---
-    const renderSkillList = (type) => {
-        return skills
+    const renderSkillList = (type) => (
+        skills
             .filter(skill => skill.type === type)
             .map(skill => (
                 <li key={skill.name} className="skill-pill">
@@ -128,20 +117,17 @@ const CreateVacancy = () => {
                                 aria-label={`Remove ${skill.name}`}>&times;</button>
                     </div>
                 </li>
-            ));
-    };
+            ))
+    );
 
     return (
         <div className="create-vacancy-container">
             <div className="vacancy-form-header">
-                <button onClick={() => {
-                    console.log('Gedrukt op: Terug naar dashboard');
-                    navigate('/dashboard/bedrijf');
-                }} className="btn-link back-to-dash-btn">&larr; Terug naar dashboard
+                <button onClick={() => navigate('/dashboard/bedrijf')}
+                        className="btn-link back-to-dash-btn">&larr; Terug naar dashboard
                 </button>
                 <h1>{isEditMode ? 'Vacature Bewerken' : 'Nieuwe Vacature'}</h1>
             </div>
-
             <form onSubmit={handleSubmit}>
                 <div className="form-section">
                     <h2>Basisinformatie</h2>
@@ -156,9 +142,22 @@ const CreateVacancy = () => {
                                   onChange={(e) => setDescription(e.target.value)}></textarea>
                     </div>
                 </div>
-
                 <div className="form-section">
-                    <h2>Vereiste Vaardigheden</h2>
+                    <div className="skills-header">
+                        <h2>Vereiste Vaardigheden</h2>
+                        {matchCount !== null && (
+                            <div className="live-counter">
+                                Potentiële Kandidaten: <strong>{matchCount}</strong>
+                            </div>
+                        )}
+                    </div>
+                    {matchCount !== null && matchCount < 5 && (
+                        <div className="bias-tip">
+                            <p><strong>Bias Tip:</strong> Je eisen zijn erg streng. Overweeg om sommige 'must-have'
+                                skills te veranderen in 'nice-to-have' om meer talent te bereiken.</p>
+                        </div>
+                    )}
+                    
                     <div className="form-group">
                         <label htmlFor="new-skill-input">Nieuwe skill toevoegen</label>
                         <div className="skills-input-container">

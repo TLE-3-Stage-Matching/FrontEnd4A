@@ -5,17 +5,22 @@ import * as mockApi from './api/mockApi'; // Import the mock API
 
 // --- Component Imports ---
 import Home from "./pages/Home.jsx";
-import CompanyDashboard from "./pages/company_dashboard.jsx";
+import CompanyDashboard from "./pages/CompanyDashboard.jsx";
 import StudentDashboard from "./pages/StudentDashboard.jsx";
 import CoordinatorDashboard from "./pages/CoordinatorDashboard.jsx";
 import CreateVacancy from "./pages/CreateVacancy.jsx";
 import Profile from "./pages/Profile.jsx";
+import MatchesDetails from "./pages/MatchesDetails.jsx";
 import StudentResult from "./pages/StudentResult.jsx";
 import StudentOnboarding from "./pages/StudentOnboarding.jsx";
+import VacancyListings from "./pages/VacancyListings.jsx";
+import CreateStudent from "./pages/CreateNewStudent.jsx";
 import './App.css';
 import DetailTestButton from "./pages/DetailTestButton.jsx";
 import matchesDetails from "./components/MatchesDetails.jsx";
 import MatchesDetails from "./components/MatchesDetails.jsx";
+import CreateNewStudent from "./pages/CreateNewStudent.jsx";
+import StudentApplications from "./components/StudentApplications.jsx";
 
 
 // --- Brain/Layout Component ---
@@ -24,6 +29,7 @@ const Layout = () => {
     const [user, setUser] = useState(null); // Full user object, null if not logged in
     const [vacancies, setVacancies] = useState([]);
     const [tags, setTags] = useState([]);
+    const [studentProfile, setStudentProfile] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
 
@@ -56,6 +62,12 @@ const Layout = () => {
         const loggedInUser = await mockApi.loginAndGetUser(role);
         setUser(loggedInUser);
         console.log("User logged in:", loggedInUser);
+
+        if (role === 'student') {
+            const profile = await mockApi.getStudentProfile();
+            setStudentProfile(profile);
+            console.log("Student profile fetched:", profile);
+        }
     };
 
     const handleLogout = () => {
@@ -115,6 +127,7 @@ const Layout = () => {
         tags,
         syncStudentTags,
         createStudentUser,
+        studentProfile,
         isLoading,
     };
 
@@ -142,6 +155,11 @@ function App() {
                 {path: "/dashboard/coordinator", element: <CoordinatorDashboard/>},
                 {path: "/vacature/nieuw", element: <CreateVacancy/>},
                 {path: "/vacature/bewerken/:id", element: <CreateVacancy/>},
+                {path: "/stage/:id", element: <MatchesDetails/>},
+                {path: "/create/student", element: <CreateNewStudent/>},
+
+                {path: "/matches", element: <MatchesDetails/>},
+                {path: "/vacatures", element: <VacancyListings/>},
 
                 //student
                 {path: "resultaten", element: <StudentResult/>},
@@ -149,6 +167,8 @@ function App() {
                 //details
                 {path: "/DetailsTest", element: <DetailTestButton/>},
                 {path: "matchesdetails", element: <MatchesDetails/>}
+                {path: "Resultaten", element: <StudentResult/>},
+                {path: "/vacature/:vacancyId/kandidaten", element: <StudentApplications/>},
             ]
         }
     ]);
