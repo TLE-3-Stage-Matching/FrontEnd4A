@@ -19,26 +19,12 @@ import StudentOnboarding from "./pages/StudentOnboarding.jsx";
 import VacancyListings from "./pages/VacancyListings.jsx";
 import DetailTestButton from "./pages/DetailTestButton.jsx";
 import CreateNewStudent from "./pages/CreateNewStudent.jsx";
-import StudentApplications from "./components/StudentApplications.jsx";
-import CompanyDashboard from "./pages/company_dashboard.jsx";
 import './App.css';
-
-const PrivateRoute = ({children}) => {
-    const {isAuthenticated, isLoading} = useContext(AppContext);
-    if (isLoading) return <div className="dashboard-container"><h1>Sessie controleren...</h1></div>;
-    if (!isAuthenticated) return <Navigate to="/login" replace/>;
-    return children;
-};
 
 const Layout = () => {
     const [user, setUser] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-    const [vacancies, setVacancies] = useState([]);
-    const [tags, setTags] = useState([]);
-    const [studentProfile, setStudentProfile] = useState(null);
-    const [allStudents, setAllStudents] = useState([]);
-    const navigate = useNavigate();
     const [appData, setAppData] = useState({
         vacancies: [],
         tags: [],
@@ -47,7 +33,7 @@ const Layout = () => {
     });
     const navigate = useNavigate();
 
-    // On initial load, validate session
+    // Sessie valideren bij opstarten
     useEffect(() => {
         const validateSession = async () => {
             const token = localStorage.getItem('token');
@@ -57,6 +43,7 @@ const Layout = () => {
                     setUser(userData);
                     setIsAuthenticated(true);
                 } catch (error) {
+                    console.error("Sessie ongeldig");
                     localStorage.removeItem('token');
                 }
             }
@@ -65,51 +52,50 @@ const Layout = () => {
         validateSession();
     }, []);
 
-    // When user authenticates, fetch data and navigate
+    // Data ophalen en navigeren na login
     useEffect(() => {
         if (!isAuthenticated || !user) return;
 
         const fetchDataAndNavigate = async () => {
             setIsLoading(true);
-            console.log("App loading, fetching initial data...");
             try {
-                // Collect all data first
                 const tagsResult = await api.getTags();
-                const newAppData = {tags: tagsResult.data};
+                const newAppData = {...appData, tags: tagsResult.data};
 
                 if (user.role === 'student') {
                     const profileResult = await api.getStudentProfile();
                     newAppData.studentProfile = profileResult.data;
+                    setAppData(newAppData);
 
-                    if (profileResult.data.student_tags && profileResult.data.student_tags.length > 0) {
+                    if (profileResult.data.student_tags?.length > 0) {
                         const vacanciesResult = await api.getPublicVacancies();
-                        newAppData.vacancies = vacanciesResult.data;
-                        setAppData(newAppData); // Single state update
+                        setAppData(prev => ({
+                            ...prev,
+                            vacancies: vacanciesResult.data,
+                            studentProfile: profileResult.data
+                        }));
                         navigate('/dashboard/student');
                     } else {
-                        setAppData(newAppData); // Single state update
                         navigate('/onboarding/student');
                     }
                 } else if (user.role === 'company') {
                     const vacanciesResult = await api.getCompanyVacancies();
-                    newAppData.vacancies = vacanciesResult.data;
-                    setAppData(newAppData); // Single state update
+                    setAppData({...newAppData, vacancies: vacanciesResult.data});
                     navigate('/dashboard/bedrijf');
                 } else {
-                    setAppData(newAppData); // Single state update
+                    setAppData(newAppData);
                     navigate('/dashboard/coordinator');
                 }
             } catch (error) {
-                console.error("An error occurred during data fetching:", error);
+                console.error("Fout bij ophalen data:", error);
             } finally {
                 setIsLoading(false);
             }
         };
 
         fetchDataAndNavigate();
-    }, [user, isAuthenticated]); // navigate is not needed here
+    }, [user, isAuthenticated]);
 
-    // --- Handlers ---
     const handleLogin = async (email, password) => {
         const {token} = await api.login(email, password);
         localStorage.setItem('token', token);
@@ -122,8 +108,7 @@ const Layout = () => {
         if (window.confirm('Weet je zeker dat je wilt uitloggen?')) {
             try {
                 await api.logout();
-            } catch (e) {
-                console.error("Logout API call failed.");
+            } catch (e) { /* ignore */
             }
             localStorage.removeItem('token');
             setUser(null);
@@ -133,55 +118,23 @@ const Layout = () => {
         }
     };
 
-    const handleSyncStudentTags = async (tagsPayload) => {
-        await api.syncStudentTags(tagsPayload);
-        const {data: updatedProfile} = await api.getStudentProfile();
-        setAppData(prev => ({...prev, studentProfile: updatedProfile}));
-    };
-
     const contextValue = {
-        user, isAuthenticated, isLoading, login: handleLogin, logout: handleLogout, ...appData,
+        user,
+        isAuthenticated,
+        isLoading,
+        login: handleLogin,
+        logout: handleLogout,
+        ...appData,
         addVacancy: async (data) => {
             const res = await api.createVacancy(data);
             setAppData(prev => ({...prev, vacancies: [...prev.vacancies, res.data]}));
             navigate('/dashboard/bedrijf');
         },
-        updateVacancy: async (id, data) => {
-            const res = await api.updateVacancy(id, data);
-            setAppData(prev => ({...prev, vacancies: prev.vacancies.map(v => v.id === id ? res.data : v)}));
-            navigate('/dashboard/bedrijf');
-        },
-        deleteVacancy: async (id) => {
-            if (window.confirm('Weet je zeker dat je deze vacature wilt verwijderen?')) {
-                await api.deleteVacancy(id);
-                setAppData(prev => ({...prev, vacancies: prev.vacancies.filter(v => v.id !== id)}));
-            }
-        },
-        createStudentUser: api.createStudentUser,
-        syncStudentTags: handleSyncStudentTags,
-    };
-
-    return <AppContext.Provider value={contextValue}><Outlet/></AppContext.Provider>;
-};
-
-    // --- Context Value ---
-    const contextValue = {
-        user,
-        userRole: user ? user.role : null,
-        login: handleLogin,
-        logout: handleLogout,
-
-        vacancies,
-        addVacancy,
-        updateVacancy,
-        deleteVacancy,
-
-        tags,
-        syncStudentTags,
-        createStudentUser,
-        studentProfile,
-        allStudents,
-        isLoading,
+        syncStudentTags: async (tagsPayload) => {
+            await api.syncStudentTags(tagsPayload);
+            const {data: updatedProfile} = await api.getStudentProfile();
+            setAppData(prev => ({...prev, studentProfile: updatedProfile}));
+        }
     };
 
     return (
@@ -191,16 +144,13 @@ const Layout = () => {
     );
 };
 
-
-// --- Main App & Router ---
 function App() {
-    // Note: The placeholder components for Student/Coordinator dashboards are removed
-    // as we now have dedicated files for them.
     const router = createBrowserRouter([
         {
             element: <Layout/>,
             children: [
-                {path: "/", element: <Home/>},
+                {path: "/", element: <HomePage/>},
+                {path: "/login", element: <LoginPage/>},
                 {path: "/profiel", element: <Profile/>},
                 {path: "/onboarding/student", element: <StudentOnboarding/>},
                 {path: "/dashboard/bedrijf", element: <CompanyDashboard/>},
@@ -208,20 +158,11 @@ function App() {
                 {path: "/dashboard/coordinator", element: <CoordinatorDashboard/>},
                 {path: "/vacature/nieuw", element: <CreateVacancy/>},
                 {path: "/vacature/bewerken/:id", element: <CreateVacancy/>},
-                {path: "/stage/:id", element: <MatchesDetails/>}, // Added dynamic route
-
-                {path: "/create/student", element: <CreateNewStudent/>},
-                {path: "/login", element: <LoginPage/>},
                 {path: "/register/bedrijf", element: <CompanyRegistrationPage/>},
                 {path: "/register/coordinator", element: <CoordinatorRegistrationPage/>},
-                ///////////// testting for this branch
                 {path: "/matches", element: <MatchesDetails/>},
                 {path: "/vacatures", element: <VacancyListings/>},
-                {path: "/DetailsTest", element: <DetailTestButton/>},
-                {path: "matchesdetails", element: <MatchesDetails/>},
-
-                //student
-                {path: "Resultaten", element: <StudentResult/>},
+                {path: "/Resultaten", element: <StudentResult/>},
             ]
         }
     ]);
