@@ -5,7 +5,7 @@ import * as mockApi from './api/mockApi'; // Import the mock API
 
 // --- Component Imports ---
 import Home from "./pages/Home.jsx";
-import CompanyDashboard from "./pages/company_dashboard.jsx";
+import CompanyDashboard from "./pages/CompanyDashboard.jsx";
 import StudentDashboard from "./pages/StudentDashboard.jsx";
 import CoordinatorDashboard from "./pages/CoordinatorDashboard.jsx";
 import CreateVacancy from "./pages/CreateVacancy.jsx";
