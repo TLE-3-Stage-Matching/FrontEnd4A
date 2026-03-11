@@ -131,6 +131,7 @@ const CoordinatorDashboard = () => {
                 ))}
             </main>
         </div>
+
     );
 };
 
