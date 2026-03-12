@@ -53,9 +53,15 @@
 }
 
 .role-card h3 {
-    margin-top: 1rem;
-    font-size: 1.25rem;
-    color: #4F46E5;
+    margin-top: 1.5rem;
+    font-size: 1.2rem;
+    color: var(--purple-main);
+    letter-spacing: 0.5px;
+
+    width: 100%;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    padding: 0 0.5rem;
 }
 
 .role-card p {

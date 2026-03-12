@@ -5,7 +5,14 @@
     font-weight: 400;
 
     color: #111;
-    background-color: #ffffff;
+    --purple-main: #7a4988;
+    --purple-soft: #9b6ba8;
+    --gold-accent: #f3d692;
+    --gold-button: #d9b37c;
+    --bg-soft: #f4eaef;
+    --white: #ffffff;
+
+
 
     font-synthesis: none;
     text-rendering: optimizeLegibility;
@@ -31,6 +38,7 @@ body {
     margin: 0;
     min-width: 320px;
     min-height: 100vh;
+    background-color: var(--bg-soft);
 }
 
 h1 {
