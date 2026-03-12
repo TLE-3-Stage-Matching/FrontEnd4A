@@ -11,7 +11,6 @@
     background-color: var(--bg-soft);
     min-height: 100vh;
     padding: 40px;
-    font-family: 'Segoe UI', sans-serif;
     color: #4a4a4a;
 }
 
@@ -25,11 +24,10 @@
 
 .brand-section h1 {
     color: var(--purple-main);
-    font-weight: 800;
     margin: 0;
 }
 
-/* Stats met consistente schaduw en goudkleurige accenten */
+/* Stats  */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -41,9 +39,7 @@
     background: white;
     padding: 25px;
     border-radius: 12px;
-    /* Goudkleurige top-border voor de header-blokken */
     border-top: 5px solid var(--gold-accent);
-    /* Consistente schaduw voor alle blokken */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     display: flex;
     flex-direction: column;
@@ -79,7 +75,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 12px; /* Afgerond zoals gevraagd */
+    border-radius: 12px;
     text-align: center;
 }
 

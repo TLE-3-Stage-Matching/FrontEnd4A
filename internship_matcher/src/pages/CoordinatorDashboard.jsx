@@ -87,7 +87,10 @@ const CoordinatorDashboard = () => {
     return (
         <div className="dashboard-container">
             <header className="top-bar">
-                {/* Aangepaste knop: Uitloggen i.p.v. Terug */}
+                <div className="brand-section">
+                    <h1>Coordinator Dashboard</h1>
+                    <p>Hogeschool nogwat</p>
+                </div>
                 <button
                     onClick={handleLogout}
                     className="btn-add-student btn-back"

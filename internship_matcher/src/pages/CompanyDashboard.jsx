@@ -39,7 +39,7 @@ const CompanyDashboard = () => {
             {/* --- HEADER SECTION --- */}
             <header className="header-row">
                 <div className="brand-section">
-                    <h1>BEDRIJF DASHBOARD</h1>
+                    <h1>Bedrijf Dashboard</h1>
                     <p>Techno Innovators BV</p>
                 </div>
                 <div className="header-actions" style={{display: 'flex', gap: '10px'}}>
