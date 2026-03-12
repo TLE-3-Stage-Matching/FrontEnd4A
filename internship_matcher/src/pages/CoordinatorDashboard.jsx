@@ -1,23 +1,21 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // useNavigate toegevoegd
-import { AppContext } from '../context/AppContext';
-import '../components/companydashboard.css';
+import React, {useState, useEffect, useContext} from 'react';
+import {Link} from 'react-router-dom';
+import {AppContext} from '../context/AppContext';
+import '../components/companydashboard.css'; // For general layout
 import '../components/Dashboard.css';
 
 const CoordinatorDashboard = () => {
-    const navigate = useNavigate();
+
+    const [filter, setFilter] = useState('Alle');
+    // --- CONTEXT ---
+    const {createStudentUser, isLoading} = useContext(AppContext);
 
     // --- STATE ---
-    const [filter, setFilter] = useState('Alle');
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
-
-    // --- CONTEXT ---
-    // Zorg dat 'logout' en 'students' in je AppContext gedefinieerd zijn
-    const { createStudentUser, isLoading, students = [], logout } = useContext(AppContext);
 
     // --- EFFECTS ---
     useEffect(() => {
@@ -34,25 +32,10 @@ const CoordinatorDashboard = () => {
     }, [successMessage]);
 
     // --- HANDLERS ---
-    const handleLogout = async () => {
-        try {
-            if (logout) {
-                await logout();
-            } else {
-                // Fallback als logout niet in context zit
-                localStorage.removeItem('token');
-            }
-            navigate('/login');
-        } catch (error) {
-            console.error("Uitloggen mislukt:", error);
-            // Zelfs bij error token verwijderen en redirecten
-            localStorage.removeItem('token');
-            navigate('/login');
-        }
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
+        console.log("Gedrukt op: Account Aanmaken");
+
         const payload = {
             role: "student",
             email: email,
@@ -67,38 +50,22 @@ const CoordinatorDashboard = () => {
         setLastName('');
         setEmail('');
         setPassword('');
-        setSuccessMessage("Student account succesvol aangemaakt.");
+        setSuccessMessage("Student account succesvol aangemaakt. Geef de inloggegevens door aan de student.");
     };
 
-    // --- LOGIC ---
-    const filteredStudents = students.filter(s =>
-        filter === 'Alle' || s.status === filter
-    );
+    const filteredStudents = students.filter(s => filter === 'Alle' || s.status === filter);
 
     // --- RENDER ---
     if (isLoading) {
-        return (
-            <div className="dashboard-container">
-                <h1>Aan het laden...</h1>
-            </div>
-        );
+        return <div className="dashboard-container"><h1>Aan het laden...</h1></div>;
     }
 
     return (
         <div className="dashboard-container">
             <header className="top-bar">
-                <div className="brand-section">
-                    <h1>Coordinator Dashboard</h1>
-                    <p>Hogeschool nogwat</p>
-                </div>
-                <button
-                    onClick={handleLogout}
-                    className="btn-add-student btn-back"
-                    style={{ cursor: 'pointer', border: 'none' }}
-                >
-                    Uitloggen
-                </button>
-
+                <Link to="/" className="btn-add-student btn-back">
+                    ← Terug naar homepage
+                </Link>
                 <Link to="/create/student" className="btn-add-student">
                     Student toevoegen
                 </Link>
@@ -145,31 +112,26 @@ const CoordinatorDashboard = () => {
             </nav>
 
             <main className="student-list">
-                {filteredStudents.length > 0 ? (
-                    filteredStudents.map((student) => (
-                        <div key={student.id} className="student-row">
-                            <div className="student-id-box">
-                                {student.name || `${student.first_name} ${student.last_name}`} {student.id}
-                            </div>
-                            <div className="job-info">
-                                <strong>{student.role}</strong><br/>
-                                <small style={{color: '#888'}}>{student.company}</small>
-                            </div>
-                            <div className="match-pct">{student.match}%</div>
-                            <div className="date">{student.date}</div>
-                            <div className={`status-label ${student.statusClass}`}>
-                                {student.status}
-                            </div>
-                            <Link to="#" className="view-link">Bekijk</Link>
+                {filteredStudents.map((student) => (
+                    <div key={student.id} className="student-row">
+                        <div className="student-id-box">
+                            {student.name} {student.id}
                         </div>
-                    ))
-                ) : (
-                    <div style={{ padding: '20px', textAlign: 'center', background: 'white', borderRadius: '8px' }}>
-                        Geen studenten gevonden voor dit filter.
+                        <div className="job-info">
+                            <strong>{student.role}</strong><br/>
+                            <small style={{color: '#888'}}>{student.company}</small>
+                        </div>
+                        <div className="match-pct">{student.match}%</div>
+                        <div className="date">{student.date}</div>
+                        <div className={`status-label ${student.statusClass}`}>
+                            {student.status}
+                        </div>
+                        <Link to="#" className="view-link">Bekijk</Link>
                     </div>
-                )}
+                ))}
             </main>
         </div>
+
     );
 };
 
