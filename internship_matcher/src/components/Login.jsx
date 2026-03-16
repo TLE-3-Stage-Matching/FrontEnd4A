@@ -74,20 +74,24 @@ const Login = ({onLogin}) => {
 
                 <div className="cards-container">
                     {/* Student card: Main pop girl era */}
-                    <div className="role-card" onClick={() => handleRoleSelect('student')}>
-                        <div className="icon-circle">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-                                 strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="12" cy="7" r="4"></circle>
-                            </svg>
-                        </div>
-                        <h3>STUDENT</h3>
-                        <p>Zoek stages en bekijk matches</p>
+                    <div className="cards-container">
+                        <button
+                            className="role-card"
+                            onClick={() => handleRoleSelect('student')}
+                            aria-label="Student: Zoek stages en bekijk matches"
+                        >
+                            <div className="icon-circle" aria-hidden="true">
+                                <svg>...</svg>
+                            </div>
+                            <h3>STUDENT</h3>
+                            <p>Zoek stages en bekijk matches</p>
+                        </button>
                     </div>
+                    >
 
                     {/* Company card: CEO of matching, boss babe */}
-                    <div className="role-card" onClick={() => handleRoleSelect('company')}>
+                    <button className="role-card" onClick={() => handleRoleSelect('company')}
+                            aria-label="Bedrijf: Zoekt gemotiveerde studenten om een stage aan te bieden">
                         <div className="icon-circle">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
                                  strokeLinecap="round" strokeLinejoin="round">
@@ -106,10 +110,11 @@ const Login = ({onLogin}) => {
                         </div>
                         <h3>STAGEBEDRIJF</h3>
                         <p>Plaats opdrachten en vind studenten</p>
-                    </div>
+                    </button>
 
                     {/* Coordinator card: The one who organizes the chaos */}
-                    <div className="role-card" onClick={() => handleRoleSelect('coordinator')}>
+                    <button className="role-card" onClick={() => handleRoleSelect('coordinator')}
+                            aria-label="Stagecoördinator: Legt de link tussen student en bedrijf, begeleid studenten door hun stage heen">
                         <div className="icon-circle">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
                                  strokeLinecap="round" strokeLinejoin="round">
@@ -119,7 +124,7 @@ const Login = ({onLogin}) => {
                         </div>
                         <h3>STAGECOÖRDINATOR</h3>
                         <p>Beheer matches en monitoring</p>
-                    </div>
+                    </button>
                 </div>
             </div>
         );
@@ -136,72 +141,61 @@ const Login = ({onLogin}) => {
 
             <form onSubmit={handleAuth}>
                 {isRegistering && (
-                    <div style={{marginBottom: '1rem'}}>
-                        <label style={{display: 'block', marginBottom: '.5rem'}}>
-                            {selectedRole === 'company' ? 'Company Name:' : 'Full Name:'}
+                    <div className="form-group">
+                        <label htmlFor="reg-name">
+                            {selectedRole === 'company' ? 'Bedrijfsnaam:' : 'Volledige naam:'}
                         </label>
-                        {/* What do we call you, legend? */}
                         <input
+                            id="reg-name"
                             type="text"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             required
-                            style={{width: '100%', padding: '.5rem', boxSizing: 'border-box'}}
+                            autoComplete="name"
                         />
                     </div>
                 )}
 
-                {isRegistering && (selectedRole === 'coordinator' || selectedRole === 'student') && (
-                    <div style={{marginBottom: '1rem'}}>
-                        <label style={{display: 'block', marginBottom: '.5rem'}}>School / Institute:</label>
-                        {/* Where do you rule, queen? */}
-                        <input
-                            type="text"
-                            value={school}
-                            onChange={(e) => setSchool(e.target.value)}
-                            required
-                            style={{width: '100%', padding: '.5rem', boxSizing: 'border-box'}}
-                        />
-                    </div>
-                )}
-
-                <div style={{marginBottom: '1rem'}}>
-                    <label style={{display: 'block', marginBottom: '.5rem'}}>Email:</label>
-                    {/* Slide into the DMs (input field) */}
+                {/* Voeg ids en htmlFor toe aan Email en Password velden */}
+                <div className="form-group">
+                    <label htmlFor="auth-email">Email:</label>
                     <input
+                        id="auth-email"
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
-                        style={{width: '100%', padding: '.5rem', boxSizing: 'border-box'}}
+                        autoComplete="email"
                     />
                 </div>
 
-                <div style={{marginBottom: '1rem'}}>
-                    <label style={{display: 'block', marginBottom: '.5rem'}}>Password:</label>
-                    {/* Keep your secrets safe, hun */}
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        style={{width: '100%', padding: '.5rem', boxSizing: 'border-box'}}
-                    />
-                </div>
+                {/* Foutmelding met role="alert" */}
+                {error && (
+                    <p role="alert" style={{color: '#B02A37', fontWeight: 'bold', textAlign: 'center'}}>
+                        {error}
+                    </p>
+                )}
 
-                {/* Red flag alert if something goes wrong */}
-                {error && <p style={{color: 'red'}}>{error}</p>}
-
-                {/* Blast off to the dashboard */}
                 <button type="submit" className="submit-button">
                     {isRegistering ? 'Sign Up' : 'Log In'}
                 </button>
 
-                {/* Switch it up */}
-                <p style={{marginTop: '1rem', textAlign: 'center', cursor: 'pointer', color: '#007bff'}}
-                   onClick={() => setIsRegistering(!isRegistering)}>
+                {/* Verander de klikbare <p> in een button voor keyboard support en target size */}
+                <button
+                    type="button"
+                    className="link-style-button"
+                    style={{
+                        marginTop: '1rem',
+                        width: '100%',
+                        background: 'none',
+                        border: 'none',
+                        color: '#007bff',
+                        cursor: 'pointer'
+                    }}
+                    onClick={() => setIsRegistering(!isRegistering)}
+                >
                     {isRegistering ? 'Already have an account? Log In' : 'No account? Register here'}
-                </p>
+                </button>
             </form>
         </div>
     );
