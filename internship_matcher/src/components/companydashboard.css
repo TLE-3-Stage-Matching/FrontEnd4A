@@ -130,3 +130,71 @@
     background-color: var(--purple-main);
     color: white;
 }
+
+.btn-view-candidates,
+.btn-logout,
+.btn-new-vacancy,
+.btn-action-icon {
+    background-color: var(--purple-main);
+    color: white !important;
+    border: none !important;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease, outline 0.1s ease;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+}
+
+/* Hover effect voor alle buttons */
+.btn-view-candidates:hover,
+.btn-logout:hover,
+.btn-new-vacancy:hover,
+.btn-action-icon:hover {
+    background-color: var(--purple-main);
+    color: white;
+}
+
+.btn-logout {
+    padding: 8px 15px;
+}
+
+.btn-new-vacancy {
+    padding: 15px 25px;
+    margin-bottom: 30px;
+    width: auto;
+}
+
+.btn-view-candidates {
+    padding: 10px 20px;
+}
+
+.btn-view-candidates:focus-visible,
+.btn-logout:focus-visible,
+.btn-new-vacancy:focus-visible,
+.btn-action-icon:focus-visible {
+    outline: 3px solid #1a252f;
+    outline-offset: 3px;
+}
+
+.btn-action-icon {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    font-size: 1.1rem;
+}
+
+/* Utility om tekst te verbergen voor het oog maar niet voor schermlezers */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}

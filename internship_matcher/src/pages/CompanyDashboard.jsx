@@ -1,85 +1,51 @@
-import React, {useState, useContext, useEffect} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import {useNavigate, Link} from 'react-router-dom';
 import {AppContext} from '../context/AppContext';
 import '../components/companydashboard.css';
 
 const CompanyDashboard = () => {
-    // --- 1. LOGIC & CONTEXT (From File 1) ---
     const {vacancies, deleteVacancy, logout} = useContext(AppContext);
     const navigate = useNavigate();
 
-    const [openMenuId, setOpenMenuId] = useState(null);
-
-    useEffect(() => {
-        console.log('Bedrijf dashboard ingeladen!');
-    }, []);
-
-    // Derived stats
-    const activeCount = vacancies.filter(v => v.status === 'Actief' || !v.status).length;
-    const totalMatches = vacancies.reduce((acc, v) => acc + (v.matches || 0), 0);
-
-    // --- 2. HANDLERS ---
     const handleLogout = () => {
-        console.log('Gedrukt op: Uitloggen');
         logout();
+        navigate('/login');
     };
 
-    const handleDelete = (id) => {
-        if (window.confirm("Weet je zeker dat je deze vacature wilt verwijderen?")) {
+    const handleDelete = (id, title) => {
+        if (window.confirm(`Weet je zeker dat je de vacature "${title}" wilt verwijderen?`)) {
             deleteVacancy(id);
         }
     };
 
-    const handleEdit = (id) => {
-        navigate(`/vacature/bewerken/${id}`);
-    };
-
     return (
         <div className="dashboard-container">
-            {/* --- HEADER SECTION --- */}
             <header className="header-row">
                 <div className="brand-section">
                     <h1>Bedrijf Dashboard</h1>
                     <p>Techno Innovators BV</p>
                 </div>
                 <div className="header-actions" style={{display: 'flex', gap: '10px'}}>
-                    <Link to="/profiel" className="btn-view-candidates"
-                          style={{textDecoration: 'none', lineHeight: '20px'}}>
+                    {/* De 'Profiel' button die als basis dient */}
+                    <Link to="/profiel" className="btn-view-candidates" style={{textDecoration: 'none'}}>
                         PROFIEL
                     </Link>
-                    <button onClick={handleLogout} className="btn-logout">Uitloggen ⎋</button>
+                    <button onClick={handleLogout} className="btn-logout">
+                        Uitloggen <span aria-hidden="true">⎋</span>
+                    </button>
                 </div>
             </header>
 
-            {/* --- STATS SECTION (Gold accent style) --- */}
             <section className="stats-grid">
-                <div className="stat-box">
-                    <h2>{activeCount}</h2>
-                    <p>Actieve vacatures</p>
-                </div>
-                <div className="stat-box">
-                    <h2>{vacancies.length}</h2>
-                    <p>Totale vacatures</p>
-                </div>
-                <div className="stat-box">
-                    <h2>{totalMatches}</h2>
-                    <p>AI matches</p>
-                </div>
+                <div className="stat-box"><h2>{vacancies.filter(v => v.status === 'Actief' || !v.status).length}</h2>
+                    <p>Actieve vacatures</p></div>
+                <div className="stat-box"><h2>{vacancies.length}</h2><p>Totale vacatures</p></div>
+                <div className="stat-box"><h2>{vacancies.reduce((acc, v) => acc + (v.matches || 0), 0)}</h2><p>AI
+                    matches</p></div>
             </section>
 
-            {/* --- ACTION BUTTON --- */}
             <button
                 className="btn-new-vacancy"
-                style={{
-                    backgroundColor: '#1a252f',
-                    color: 'white',
-                    border: 'none',
-                    padding: '15px 25px',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    marginBottom: '30px',
-                    fontWeight: 'bold'
-                }}
                 onClick={() => navigate('/vacature/nieuw')}
             >
                 + NIEUWE VACATURE PLAATSEN
@@ -87,12 +53,9 @@ const CompanyDashboard = () => {
 
             <h2 style={{fontSize: '18px', marginBottom: '20px', fontWeight: '700'}}>MIJN VACATURES</h2>
 
-            {/* --- VACANCY LIST (Purple side-block style) --- */}
             <div className="vacancy-list">
                 {vacancies.map((vacancy) => (
                     <div key={vacancy.id} className="vacancy-card">
-
-                        {/* Purple rounded block */}
                         <div className="vacancy-side-block">
                             <h3>{vacancy.title}</h3>
                         </div>
@@ -109,29 +72,27 @@ const CompanyDashboard = () => {
                                 <button
                                     className="btn-view-candidates"
                                     onClick={() => navigate(`/vacature/${vacancy.id}/kandidaten`)}
+                                    aria-label={`Bekijk kandidaten voor ${vacancy.title}`}
                                     style={{marginTop: '10px'}}
                                 >
                                     BEKIJK KANDIDATEN
                                 </button>
                             </div>
 
-                            {/* Action Buttons from File 2 style */}
                             <div className="action-buttons" style={{display: 'flex', gap: '10px'}}>
                                 <button
                                     className="btn-action-icon"
-                                    onClick={() => handleEdit(vacancy.id)}
-                                    title="Bewerken"
-                                    style={{background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer'}}
+                                    onClick={() => navigate(`/vacature/bewerken/${vacancy.id}`)}
+                                    aria-label={`Bewerk ${vacancy.title}`}
                                 >
-                                    ✏️
+                                    <span aria-hidden="true">✏️</span>
                                 </button>
                                 <button
                                     className="btn-action-icon"
-                                    onClick={() => handleDelete(vacancy.id)}
-                                    title="Verwijderen"
-                                    style={{background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer'}}
+                                    onClick={() => handleDelete(vacancy.id, vacancy.title)}
+                                    aria-label={`Verwijder ${vacancy.title}`}
                                 >
-                                    🗑️
+                                    <span aria-hidden="true">🗑️</span>
                                 </button>
                             </div>
                         </div>

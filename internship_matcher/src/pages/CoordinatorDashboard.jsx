@@ -45,7 +45,6 @@ const CoordinatorDashboard = () => {
                     <p>Hogeschool nogwat</p>
                 </div>
 
-                {/* Logout button met duidelijke actie */}
                 <button
                     onClick={handleLogout}
                     className="btn-add-student btn-back"
@@ -66,13 +65,10 @@ const CoordinatorDashboard = () => {
                 </div>
             </header>
 
-            {/* Belangrijke info banner - aria-live zodat wijzigingen gemeld worden */}
             <div className="info-banner" role="note" aria-label="Systeem informatie">
                 <strong>Human-in-the-loop:</strong> de AI genereert match-voorstellen maar jij valideert deze voordat
                 het definitief worden. Je behoudt altijd de volledige controle.
             </div>
-
-            {/* Succesmelding voor nieuwe accounts (WCAG 4.1.3) */}
             {successMessage && (
                 <div role="alert" style={{
                     backgroundColor: '#d4edda',
@@ -91,14 +87,13 @@ const CoordinatorDashboard = () => {
                     <span>Bias waarschuwingen</span>
                     <span className="stat-number">1</span>
                 </div>
-                {/* ... andere stat cards ... */}
                 <div className="stat-card purple">
                     <span>Totale matches</span>
                     <span className="stat-number">{students.length}</span>
                 </div>
             </section>
 
-            {/* Filter-bar veranderd naar nav met buttons voor keyboard support */}
+
             <nav className="filter-bar" aria-label="Filter studenten op status">
                 {['Alle', 'Te beoordelen', 'Goedgekeurd', 'Afgewezen'].map((item) => (
                     <button
