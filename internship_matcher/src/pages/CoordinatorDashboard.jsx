@@ -111,34 +111,44 @@ const CoordinatorDashboard = () => {
 
             <main className="student-list" aria-label="Overzicht van studenten">
                 {filteredStudents.length > 0 ? (
-                    <div role="list">
-                        {filteredStudents.map((student) => (
-                            <div key={student.id} className="student-row" role="listitem">
+                    filteredStudents.map((student) => {
+                        // Safe fallback for properties that might be nested or missing in real data
+                        const profile = student.student_profile || {};
+                        const statusText = profile.searching_status || "Actief"; // Assuming a default status
+
+                        return (
+                            <div key={student.id} className="student-row">
                                 <div className="student-id-box">
-                                    {student.name || `${student.first_name} ${student.last_name}`}
-                                    <span className="sr-only"> ID: </span> {student.id}
+                                    {/* Uses real backend fields: first_name and last_name */}
+                                    {student.first_name} {student.last_name}
+                                    <span style={{color: '#888', marginLeft: '8px'}}>#{student.id}</span>
                                 </div>
+
                                 <div className="job-info">
-                                    <strong>{student.role}</strong><br/>
-                                    <small style={{color: '#888'}}
-                                           aria-label={`Bedrijf: ${student.company}`}>{student.company}</small>
+                                    {/* Fallback to headline or email since students don't have a 'company' yet */}
+                                    <strong>{profile.headline || 'Student'}</strong><br/>
+                                    <small style={{color: '#888'}}>{student.email}</small>
                                 </div>
-                                <div className="match-pct" aria-label={`Match percentage: ${student.match} procent`}>
-                                    {student.match}%
+
+                                {/* Match percentage is not directly on student, so keep as '-' or fetch separately */}
+                                <div className="match-pct">-</div>
+
+                                {/* Use created_at from the student object */}
+                                <div className="date">
+                                    {student.created_at ? new Date(student.created_at).toLocaleDateString() : '-'}
                                 </div>
-                                <div className="date" aria-label={`Datum van aanvraag: ${student.date}`}>
-                                    {student.date}
+
+                                <div className="status-label">
+                                    {statusText}
                                 </div>
-                                <div className={`status-label ${student.statusClass}`}>
-                                    <span className="sr-only">Status: </span>{student.status}
-                                </div>
-                                <Link to={`/student/${student.id}`} className="view-link"
-                                      aria-label={`Bekijk details van ${student.name}`}>
+
+                                {/* Dynamic link to the Student Applications page */}
+                                <Link to={`/coordinator/student/${student.id}`} className="view-link">
                                     Bekijk
                                 </Link>
                             </div>
-                        ))}
-                    </div>
+                        );
+                    })
                 ) : (
                     <div role="status"
                          style={{padding: '20px', textAlign: 'center', background: 'white', borderRadius: '8px'}}>

@@ -20,6 +20,7 @@ import StudentResult from "./pages/StudentResult.jsx";
 import MatchesDetails from "./pages/MatchesDetails.jsx";
 import StudentApplications from "./components/StudentApplications.jsx";
 import './App.css';
+import Sandbox from "./pages/Sandbox.jsx";
 
 const Layout = () => {
     const [user, setUser] = useState(null);
@@ -91,15 +92,16 @@ const Layout = () => {
         loadDashboardData();
     }, [user, isAuthenticated, navigate]);
 
-    const handleLogin = async (email, password) => {
+    // --- MEMOIZED FUNCTIONS USING useCallback ---
+    const handleLogin = useCallback(async (email, password) => {
         const {token} = await api.login(email, password);
         localStorage.setItem('token', token);
         const {data} = await api.getMe();
         setUser(data);
         setIsAuthenticated(true);
-    };
+    }, []);
 
-    const handleLogout = () => {
+    const handleLogout = useCallback(() => {
         if (window.confirm('Weet je zeker dat je wilt uitloggen?')) {
             localStorage.removeItem('token');
             setUser(null);
@@ -107,9 +109,9 @@ const Layout = () => {
             setAppData({vacancies: [], tags: [], allStudents: [], studentProfile: null});
             navigate('/login');
         }
-    };
+    }, [navigate]);
 
-    const createStudentUser = async (payload) => {
+    const createStudentUser = useCallback(async (payload) => {
         setIsLoading(true);
         try {
             console.log("--- DEBUG: Student aanmaken gestart ---");
@@ -117,12 +119,9 @@ const Layout = () => {
 
             const res = await api.createStudentUser(payload);
 
-            // Hier kijken we wat de backend ECHT antwoordt
             console.log("Antwoord van backend na aanmaken:", res);
-
             const newStudent = res.data || res;
 
-            // Check of de backend een coordinator_id meestuurt
             if (!newStudent.coordinator_id) {
                 console.warn("WAARSCHUWING: De nieuwe student heeft geen 'coordinator_id'. " +
                     "De kans is groot dat deze student na het uitloggen niet meer zichtbaar is.");
@@ -141,7 +140,19 @@ const Layout = () => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, []);
+
+    const addVacancy = useCallback(async (data) => {
+        const res = await api.createVacancy(data);
+        setAppData(prev => ({...prev, vacancies: [...(prev.vacancies || []), res.data || res]}));
+        navigate('/dashboard/bedrijf');
+    }, [navigate]);
+
+    const syncStudentTags = useCallback(async (tags) => {
+        await api.syncStudentTags(tags);
+        const {data} = await api.getStudentProfile();
+        setAppData(prev => ({...prev, studentProfile: data}));
+    }, []);
 
     const contextValue = {
         user, isAuthenticated, isLoading,
@@ -150,16 +161,8 @@ const Layout = () => {
         createStudentUser,
         students: appData.allStudents || [],
         ...appData,
-        addVacancy: async (data) => {
-            const res = await api.createVacancy(data);
-            setAppData(prev => ({...prev, vacancies: [...(prev.vacancies || []), res.data || res]}));
-            navigate('/dashboard/bedrijf');
-        },
-        syncStudentTags: async (tags) => {
-            await api.syncStudentTags(tags);
-            const {data} = await api.getStudentProfile();
-            setAppData(prev => ({...prev, studentProfile: data}));
-        }
+        addVacancy,
+        syncStudentTags
     };
 
     return (
@@ -169,7 +172,7 @@ const Layout = () => {
     );
 };
 
-// Router remains the same...
+// Router remains exactly the same as your original file
 function App() {
     const router = createBrowserRouter([{
         element: <Layout/>,
@@ -186,10 +189,15 @@ function App() {
             {path: "/vacatures", element: <VacancyListings/>},
             {path: "/vacature/nieuw", element: <CreateVacancy/>},
             {path: "/vacature/bewerken/:id", element: <CreateVacancy/>},
+            // For the Company (Defaults to role="company")
             {path: "/vacature/:id/kandidaten", element: <StudentApplications/>},
+            // For the Coordinator
+            {path: "/coordinator/student/:id", element: <StudentApplications role="coordinator"/>},
             {path: "/create/student", element: <CreateStudent/>},
             {path: "/matches", element: <MatchesDetails/>},
             {path: "/resultaten", element: <StudentResult/>},
+            {path: "/sandbox/:id", element: <Sandbox/>},
+            {path: "/vacancies/:id", element: <Sandbox/>}
         ]
     }]);
     return <RouterProvider router={router}/>;
