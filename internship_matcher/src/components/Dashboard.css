@@ -125,7 +125,6 @@
     padding: 15px 30px;
     cursor: pointer;
     transition: background 0.2s;
-    color: #777;
 }
 
 .filter-item:hover {
