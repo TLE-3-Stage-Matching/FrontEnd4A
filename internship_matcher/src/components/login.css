@@ -77,15 +77,26 @@
     cursor: not-allowed;
 }
 
-.register-link {
-    margin-top: 1.5rem;
-    text-align: center;
-    font-size: 0.85rem;
-    border-top: 1px solid #eee;
-    padding-top: 1rem;
-}
-
 .register-link a {
     color: var(--purple-main);
     font-weight: 600;
+    text-decoration: none;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: color 0.2s, text-decoration 0.2s;
+}
+
+.register-link a:hover {
+    text-decoration: underline;
+    color: var(--purple-soft);
+}
+
+.register-link a:focus-visible {
+    outline: 3px solid var(--purple-main);
+    outline-offset: 2px;
+    text-decoration: underline;
+}
+
+.register-link a:focus {
+    outline: none;
 }

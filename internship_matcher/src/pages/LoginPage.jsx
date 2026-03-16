@@ -1,10 +1,10 @@
-import React, { useState, useContext } from 'react';
-import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { AppContext } from '../context/AppContext';
+import React, {useState, useContext, useEffect} from 'react';
+import {useLocation, useNavigate, Link} from 'react-router-dom';
+import {AppContext} from '../context/AppContext';
 import '../components/login.css';
 
 const LoginPage = () => {
-    const { login } = useContext(AppContext);
+    const {login} = useContext(AppContext);
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -14,6 +14,18 @@ const LoginPage = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState(null);
     const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+    useEffect(() => {
+        document.title = "Login | Log in op jouw KLIK account";
+
+        let metaDescription = document.querySelector('meta[name="description"]');
+        if (!metaDescription) {
+            metaDescription = document.createElement('meta');
+            metaDescription.name = "description";
+            document.head.appendChild(metaDescription);
+        }
+        metaDescription.content = "KLIK Matching Login";
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -32,22 +44,30 @@ const LoginPage = () => {
 
     const getRoleName = () => {
         switch (role) {
-            case 'student': return 'Student';
-            case 'company': return 'Stagebedrijf';
-            case 'coordinator': return 'Stagecoördinator';
-            default: return 'Gebruiker';
+            case 'student':
+                return 'Student';
+            case 'company':
+                return 'Stagebedrijf';
+            case 'coordinator':
+                return 'Stagecoördinator';
+            default:
+                return 'Gebruiker';
         }
     };
 
     return (
-        <div className="login-form-container">
-            <button className="back-button" onClick={() => navigate('/')}>
+        <main className="login-form-container">
+            <button
+                className="back-button"
+                onClick={() => navigate('/')}
+                aria-label="Terug naar de rol-selectie pagina"
+            >
                 ← Terug naar rollen
             </button>
 
             <h1>Login als {getRoleName()}</h1>
 
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} noValidate={false}>
                 <div className="form-group">
                     <label htmlFor="login-email">E-mailadres</label>
                     <input
@@ -57,6 +77,8 @@ const LoginPage = () => {
                         onChange={(e) => setEmail(e.target.value)}
                         required
                         autoComplete="email"
+                        /* 3.3.1: Als er een error is, koppel deze aan het veld */
+                        aria-invalid={error ? "true" : "false"}
                     />
                 </div>
                 <div className="form-group">
@@ -68,12 +90,27 @@ const LoginPage = () => {
                         onChange={(e) => setPassword(e.target.value)}
                         required
                         autoComplete="current-password"
+                        aria-invalid={error ? "true" : "false"}
                     />
                 </div>
 
-                {error && <p className="error-message" style={{color: '#B02A37', textAlign: 'center'}}>{error}</p>}
+                {/* 4.1.3: role="alert" zorgt dat de error direct wordt voorgelezen */}
+                {error && (
+                    <p
+                        className="error-message"
+                        role="alert"
+                        style={{color: '#B02A37', textAlign: 'center', fontWeight: 'bold'}}
+                    >
+                        {error}
+                    </p>
+                )}
 
-                <button type="submit" className="btn-primary" disabled={isLoggingIn}>
+                <button
+                    type="submit"
+                    className="btn-primary"
+                    disabled={isLoggingIn}
+                    aria-busy={isLoggingIn}
+                >
                     {isLoggingIn ? 'Inloggen...' : 'Login'}
                 </button>
             </form>
@@ -89,7 +126,7 @@ const LoginPage = () => {
                     <p>Nog geen account? <Link to="/register/coordinator">Registreer hier als coördinator</Link>.</p>
                 </div>
             )}
-        </div>
+        </main>
     );
 };
 
