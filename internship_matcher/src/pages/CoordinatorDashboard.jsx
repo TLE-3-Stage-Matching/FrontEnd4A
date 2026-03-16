@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // useNavigate toegevoegd
-import { AppContext } from '../context/AppContext';
+import React, {useState, useEffect, useContext} from 'react';
+import {Link, useNavigate} from 'react-router-dom';
+import {AppContext} from '../context/AppContext';
 import '../components/companydashboard.css';
 import '../components/Dashboard.css';
 
@@ -16,8 +16,7 @@ const CoordinatorDashboard = () => {
     const [successMessage, setSuccessMessage] = useState('');
 
     // --- CONTEXT ---
-    // Zorg dat 'logout' en 'students' in je AppContext gedefinieerd zijn
-    const { createStudentUser, isLoading, students = [], logout } = useContext(AppContext);
+    const {createStudentUser, isLoading, students = [], logout} = useContext(AppContext);
 
     // --- EFFECTS ---
     useEffect(() => {
@@ -71,9 +70,9 @@ const CoordinatorDashboard = () => {
     };
 
     // --- LOGIC ---
-    const filteredStudents = students.filter(s =>
-        filter === 'Alle' || s.status === filter
-    );
+    const filteredStudents = Array.isArray(students)
+        ? students.filter(s => filter === 'Alle' || s.status === filter)
+        : [];
 
     // --- RENDER ---
     if (isLoading) {
@@ -94,7 +93,7 @@ const CoordinatorDashboard = () => {
                 <button
                     onClick={handleLogout}
                     className="btn-add-student btn-back"
-                    style={{ cursor: 'pointer', border: 'none' }}
+                    style={{cursor: 'pointer', border: 'none'}}
                 >
                     Uitloggen
                 </button>
@@ -164,7 +163,7 @@ const CoordinatorDashboard = () => {
                         </div>
                     ))
                 ) : (
-                    <div style={{ padding: '20px', textAlign: 'center', background: 'white', borderRadius: '8px' }}>
+                    <div style={{padding: '20px', textAlign: 'center', background: 'white', borderRadius: '8px'}}>
                         Geen studenten gevonden voor dit filter.
                     </div>
                 )}

@@ -1,7 +1,7 @@
 // --- API Client ---
 // This file is responsible for all communication with the backend API.
 
-const BASE_URL = 'https://back-end-main-2fian7.laravel.cloud/api/v1'; // Use the live backend URL
+const BASE_URL = 'https://back-end-main-2fian7.laravel.cloud/api/v1';
 
 /**
  * A wrapper for the fetch API that handles JWT authentication,
@@ -52,7 +52,7 @@ export const apiRequest = async (path, options = {}) => {
         } catch (error) {
             console.error("Failed to refresh token:", error.message);
             localStorage.removeItem('token');
-            window.location.href = '/login'; 
+            window.location.href = '/login';
             throw error;
         }
     }
@@ -120,7 +120,10 @@ export const getStudentProfile = () => apiRequest('/student/profile');
 
 
 // === Coordinator ===
+export const getStudents = () => apiRequest('/coordinator/users');
 export const createStudentUser = (studentData) => apiRequest('/coordinator/users', {
     method: 'POST',
     body: JSON.stringify(studentData),
 });
+
+
