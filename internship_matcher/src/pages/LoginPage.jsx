@@ -1,4 +1,4 @@
-import React, {useState, useContext} from 'react';
+import React, {useState, useContext, useEffect} from 'react';
 import {useLocation, useNavigate, Link} from 'react-router-dom';
 import {AppContext} from '../context/AppContext';
 import '../components/login.css';
@@ -14,6 +14,18 @@ const LoginPage = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState(null);
     const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+    useEffect(() => {
+        document.title = "Login | Log in op jouw KLIK account";
+
+        let metaDescription = document.querySelector('meta[name="description"]');
+        if (!metaDescription) {
+            metaDescription = document.createElement('meta');
+            metaDescription.name = "description";
+            document.head.appendChild(metaDescription);
+        }
+        metaDescription.content = "KLIK Matching Login";
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
