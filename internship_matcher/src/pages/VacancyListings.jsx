@@ -2,6 +2,8 @@ import React, {useContext} from 'react';
 import {AppContext} from '../context/AppContext';
 import {Link} from 'react-router-dom';
 import '../components/VacancyListings.css';
+import Sandbox from "./Sandbox.jsx";
+import sandbox from "./Sandbox.jsx";
 
 // --- Sub-component for Match Explanation ---
 // This component is now more robust to handle the live API data structure.
@@ -78,6 +80,7 @@ const VacancyListings = () => {
                                 studentSkills={studentProfile.student_tags}
                                 vacancySkills={vacancy.vacancy_requirements}
                             />
+                            <Link to={`/vacancies/${vacancy.id}`} className="btn-primary">Bekijk Details</Link>
                         </div>
                     );
                 })}

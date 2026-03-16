@@ -120,10 +120,20 @@ export const getStudentProfile = () => apiRequest('/student/profile');
 
 
 // === Coordinator ===
-export const getStudents = () => apiRequest('/coordinator/users');
+export const getStudents = async () => {
+    const response = await apiRequest('/coordinator/users?role=student');
+    // Assuming the backend wraps the array in a "data" property
+    return response.data;
+};
+
 export const createStudentUser = (studentData) => apiRequest('/coordinator/users', {
     method: 'POST',
     body: JSON.stringify(studentData),
 });
 
+// === Applications ===
+// Function for the Company: Get all candidates who applied for a specific vacancy
+export const getApplicationsForVacancy = (vacancyId) => apiRequest(`/company/vacancies/${vacancyId}/applications`);
 
+// Function for the Coordinator: Get all applications made by a specific student
+export const getApplicationsForStudent = (studentId) => apiRequest(`/coordinator/users/${studentId}/applications`);
