@@ -14,10 +14,8 @@ const SkillToggle = ({type, onToggle}) => (
     </button>
 );
 
-
 const CreateVacancy = () => {
     // --- HOOKS & CONTEXT ---
-    const {vacancies, tags: availableTags, isLoading, addVacancy, updateVacancy} = useContext(AppContext);
     const {vacancies, tags: availableTags, allStudents, isLoading, addVacancy, updateVacancy} = useContext(AppContext);
     const navigate = useNavigate();
     const {id} = useParams();
@@ -26,9 +24,9 @@ const CreateVacancy = () => {
     // --- STATE ---
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    const [skills, setSkills] = useState([]); // This will hold objects like {id?, name, type}
+    const [skills, setSkills] = useState([]);
     const [currentSkill, setCurrentSkill] = useState('');
-    const [matchCount, setMatchCount] = useState(null); // State for the live counter
+    const [matchCount, setMatchCount] = useState(null);
 
     // --- EFFECTS ---
     // Effect to pre-fill the form in edit mode
@@ -43,23 +41,14 @@ const CreateVacancy = () => {
         }
     }, [id, isEditMode, vacancies, isLoading]);
 
-    // Effect to calculate the live match count whenever skills change
     useEffect(() => {
         if (isLoading || !allStudents) return;
-
-        const mustHaveIds = skills
-            .filter(s => s.type === 'must' && s.id)
-            .map(s => s.id);
-
+        const mustHaveIds = skills.filter(s => s.type === 'must' && s.id).map(s => s.id);
         if (mustHaveIds.length === 0) {
             setMatchCount(allStudents.length);
             return;
         }
-
-        const matchingStudents = allStudents.filter(student => {
-            return mustHaveIds.every(mustId => student.skills.has(mustId));
-        });
-
+        const matchingStudents = allStudents.filter(student => mustHaveIds.every(mustId => student.skills.has(mustId)));
         setMatchCount(matchingStudents.length);
     }, [skills, allStudents, isLoading]);
 
@@ -71,9 +60,10 @@ const CreateVacancy = () => {
             return;
         }
         const existingTag = availableTags.find(tag => tag.name.toLowerCase() === skillName.toLowerCase());
-        const newSkill = existingTag
-            ? {id: existingTag.id, name: existingTag.name, type: 'must'}
-            : {name: skillName, type: 'must'};
+        const newSkill = existingTag ? {id: existingTag.id, name: existingTag.name, type: 'must'} : {
+            name: skillName,
+            type: 'must'
+        };
         setSkills([...skills, newSkill]);
         setCurrentSkill('');
     };
@@ -93,17 +83,20 @@ const CreateVacancy = () => {
         e.preventDefault();
         const apiTags = skills.map(skill => {
             const tagPayload = {importance: skill.type === 'must' ? 1 : 0};
-            if (skill.id) {
-                tagPayload.id = skill.id;
-            } else {
+            if (skill.id) tagPayload.id = skill.id;
+            else {
                 tagPayload.name = skill.name;
                 tagPayload.tag_type = 'skill';
             }
             return tagPayload;
         });
         const vacancyData = {title, description, tags: apiTags};
-        if (isEditMode) await updateVacancy({...vacancyData, id: parseInt(id)});
-        else await addVacancy(vacancyData);
+
+        if (isEditMode) {
+            await updateVacancy(parseInt(id), vacancyData);
+        } else {
+            await addVacancy(vacancyData);
+        }
     };
 
     if (isLoading) {
@@ -166,7 +159,7 @@ const CreateVacancy = () => {
                                 skills te veranderen in 'nice-to-have' om meer talent te bereiken.</p>
                         </div>
                     )}
-                    
+
                     <div className="form-group">
                         <label htmlFor="new-skill-input">Nieuwe skill toevoegen</label>
                         <div className="skills-input-container">
@@ -182,10 +175,12 @@ const CreateVacancy = () => {
                         </div>
                     </div>
                     <div className="skills-list-container">
-                        <div className="skills-list"><h3>Must-have</h3>
+                        <div className="skills-list">
+                            <h3>Must-have</h3>
                             <ul className="skills-pills">{renderSkillList('must')}</ul>
                         </div>
-                        <div className="skills-list"><h3>Nice-to-have</h3>
+                        <div className="skills-list">
+                            <h3>Nice-to-have</h3>
                             <ul className="skills-pills">{renderSkillList('nice')}</ul>
                         </div>
                     </div>

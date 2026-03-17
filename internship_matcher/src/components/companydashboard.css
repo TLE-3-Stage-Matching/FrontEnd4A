@@ -1,111 +1,200 @@
-/* Serving "Clean Girl Aesthetic" for the dashboard. Effortlessly chic. */
+:root {
+    --purple-main: #7a4988;
+    --purple-soft: #9b6ba8;
+    --gold-accent: #f3d692;
+    --gold-button: #d9b37c;
+    --bg-soft: #f4eaef;
+    --white: #ffffff;
+}
+
 .dashboard-container {
+    background-color: var(--bg-soft);
+    min-height: 100vh;
     padding: 40px;
-    /* No container bg, we let the body's light gray shine through. */
+    color: #4a4a4a;
 }
 
-.dashboard-header {
+/* Header */
+.header-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    max-width: 1200px;
-    margin: 0 auto 40px auto;
+    margin-bottom: 30px;
 }
 
-.dashboard-header h1 {
-    font-size: 28px;
-    font-weight: 600;
+.brand-section h1 {
+    color: var(--purple-main);
     margin: 0;
-    color: #343A40;
 }
 
-/* Reusing the global button styles from index.css, as one should. */
-.new-vacancy-btn {
-    /* This class is now just for targeting, styles are in .btn and .btn-primary in JSX */
-}
-
-.stats-container {
+/* Stats  */
+.stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 24px;
-    max-width: 1200px;
-    margin: 0 auto 40px auto;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
 }
 
-/* Cards are the new borders. It's about quiet luxury. */
-.stat-card {
-    background-color: #fff;
-    border: 1px solid #E9ECEF;
+.stat-box {
+    background: white;
+    padding: 25px;
     border-radius: 12px;
-    padding: 24px;
-    text-align: center;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-top: 5px solid var(--gold-accent);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
-.stat-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
-}
-
-.stat-card h3 {
-    margin: 0 0 8px 0;
-    font-size: 40px;
-    font-weight: 700;
-    color: #212529;
-}
-
-.stat-card p {
+.stat-box h2 {
     margin: 0;
-    font-size: 1rem;
-    color: #6C757D; /* A soft, gentle gray. */
-    font-weight: 500;
-}
-
-.vacancies-section {
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.vacancies-section h2 {
-    font-size: 24px;
+    font-size: 32px;
     font-weight: 600;
+    color: var(--purple-main);
+}
+
+/* Vacancy Card Styling */
+.vacancy-card {
+    background: white;
+    border-radius: 15px;
     margin-bottom: 20px;
-    color: #343A40;
-}
-
-.vacancy-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.vacancy-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 24px;
-    border: 1px solid #E9ECEF;
-    border-radius: 12px;
-    margin-bottom: 16px;
-    background-color: #fff;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    padding: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border: none;
 }
 
-.vacancy-info h3 {
-    margin: 0 0 8px 0;
-    font-size: 18px;
-    font-weight: 600;
-    color: #343A40;
-}
-
-.vacancy-meta {
+.vacancy-side-block {
+    background-color: var(--purple-main);
+    color: white;
+    width: 220px;
+    height: 80px;
+    padding: 10px 20px;
     display: flex;
-    gap: 24px;
-    color: #6C757D;
-    font-size: 14px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    text-align: center;
 }
 
-.view-details-btn {
-    /* This class is for targeting. Styles are in .btn and .btn-secondary in JSX */
+.vacancy-side-block h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.vacancy-main-content {
+    flex: 1;
+    padding: 0 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Tags voor status */
+.tag-active {
+    background-color: #dcfce7;
+    color: #22c55e;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.tag-closed {
+    background-color: #fee2e2;
+    color: #ef4444;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.btn-view-candidates {
+    background: white;
+    border: 1.5px solid var(--purple-main);
+    color: var(--purple-main);
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 12px;
+    transition: 0.2s;
+}
+
+.btn-view-candidates:hover {
+    background-color: var(--purple-main);
+    color: white;
+}
+
+.btn-view-candidates,
+.btn-logout,
+.btn-new-vacancy,
+.btn-action-icon {
+    background-color: var(--purple-main);
+    color: white !important;
+    border: none !important;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease, outline 0.1s ease;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+}
+
+/* Hover effect voor alle buttons */
+.btn-view-candidates:hover,
+.btn-logout:hover,
+.btn-new-vacancy:hover,
+.btn-action-icon:hover {
+    background-color: var(--purple-main);
+    color: white;
+}
+
+.btn-logout {
+    padding: 8px 15px;
+}
+
+.btn-new-vacancy {
+    padding: 15px 25px;
+    margin-bottom: 30px;
+    width: auto;
+}
+
+.btn-view-candidates {
+    padding: 10px 20px;
+}
+
+.btn-view-candidates:focus-visible,
+.btn-logout:focus-visible,
+.btn-new-vacancy:focus-visible,
+.btn-action-icon:focus-visible {
+    outline: 3px solid #1a252f;
+    outline-offset: 3px;
+}
+
+.btn-action-icon {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    font-size: 1.1rem;
+}
+
+/* Utility om tekst te verbergen voor het oog maar niet voor schermlezers */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
 }

@@ -2,6 +2,11 @@
     margin: 0 auto;
 }
 
+button:focus, a:focus {
+    outline: 3px solid #4f46e5;
+    outline-offset: 2px;
+}
+
 /* --- Role Selection Screen Styles --- */
 
 .role-selection-container {
@@ -19,7 +24,6 @@
 
 .role-selection-container .subtitle {
     font-size: 1.1rem;
-    color: #6C757D;
     margin-bottom: 3rem;
 }
 
@@ -53,9 +57,15 @@
 }
 
 .role-card h3 {
-    margin-top: 1rem;
-    font-size: 1.25rem;
-    color: #4F46E5;
+    margin-top: 1.5rem;
+    font-size: 1.2rem;
+    color: var(--purple-main);
+    letter-spacing: 0.5px;
+
+    width: 100%;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    padding: 0 0.5rem;
 }
 
 .role-card p {
@@ -77,4 +87,257 @@
 .btn-danger:hover {
     background-color: #94242f;
     border-color: #88212b;
+}
+
+/* --- SANDBOX (Wat-als Simulator) STYLES --- */
+
+.sandbox-container {
+    background-color: var(--bg-pink, #F7EDF0); /* Fallback kleuren voor de zekerheid */
+    min-height: 100vh;
+    color: var(--black, #090808);
+}
+
+.sandbox-header {
+    padding: 20px 40px;
+    background-color: var(--white, #FFFFFF);
+    border-bottom: 1px solid #ddd;
+}
+
+.sandbox-back-link {
+    color: var(--purple-light, #9A5B86);
+    text-decoration: none;
+    margin-bottom: 10px;
+    display: inline-block;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.sandbox-back-link:hover {
+    text-decoration: underline;
+}
+
+.sandbox-title-group {
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+}
+
+.sandbox-title-group h1 {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 600;
+}
+
+.sandbox-title-group span {
+    color: #666;
+    font-size: 14px;
+}
+
+.sandbox-content {
+    padding: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.info-banner {
+    background-color: var(--white, #FFFFFF);
+    padding: 20px;
+    border-radius: 8px;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 30px;
+    border: 1px solid #ccc;
+}
+
+.info-icon {
+    font-size: 20px;
+    border: 2px solid var(--black, #090808);
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.info-banner p {
+    margin: 0;
+    font-size: 14px;
+}
+
+.sandbox-layout {
+    display: flex;
+    gap: 30px;
+}
+
+/* Responsive: zet ze onder elkaar op smalle schermen */
+@media (max-width: 768px) {
+    .sandbox-layout {
+        flex-direction: column;
+    }
+}
+
+.sandbox-card {
+    flex: 1;
+    background-color: var(--white, #FFFFFF);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.sandbox-right-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.sandbox-card h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.sandbox-card h4 {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+.skill-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #EAEAEA;
+    padding: 12px 20px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+}
+
+.skill-row span {
+    font-weight: 500;
+    font-size: 14px;
+}
+
+/* De vierkante toggle box (Zwart uit, Paars aan) */
+.toggle-switch {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: var(--black, #090808);
+    transition: background-color 0.2s ease;
+}
+
+.toggle-switch.active {
+    background-color: var(--purple-light, #9A5B86);
+}
+
+.impact-summary {
+    background-color: #EAEAEA;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+}
+
+.impact-summary .job-title {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.impact-summary .company-name {
+    font-size: 13px;
+    color: #666;
+}
+
+.impact-summary .min-match {
+    font-size: 12px;
+    color: #666;
+    margin-top: 10px;
+}
+
+.score-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.score-row .label {
+    font-size: 13px;
+    color: #666;
+}
+
+.score-row .value {
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.progress-bar-container {
+    width: 100%;
+    background-color: #EAEAEA;
+    height: 10px;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    transition: width 0.4s ease-in-out, background-color 0.4s ease;
+}
+
+.status-text {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.recommendation-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 15px;
+    background-color: #EAEAEA;
+    border-radius: 6px;
+    margin-bottom: 8px;
+}
+
+.recommendation-row span {
+    font-size: 14px;
+}
+
+.recommendation-row .gain {
+    font-weight: 600;
+    color: var(--black, #090808);
+}
+
+/* --- SCROLLBARE SKILLS LIJST --- */
+.skills-scroll-box {
+    max-height: 350px; /* Bepaalt wanneer de lijst moet gaan scrollen */
+    overflow-y: auto; /* Zet de verticale scrollbar aan als het niet past */
+    padding-right: 10px; /* Voorkomt dat de scrollbar over je knoppen valt */
+    margin-right: -10px; /* Compenseert de padding voor een strakke uitlijning */
+}
+
+/* Custom Scrollbar voor Webkit browsers (Chrome, Safari, Edge) */
+.skills-scroll-box::-webkit-scrollbar {
+    width: 6px;
+}
+
+.skills-scroll-box::-webkit-scrollbar-track {
+    background: #EAEAEA;
+    border-radius: 4px;
+}
+
+.skills-scroll-box::-webkit-scrollbar-thumb {
+    background: var(--purple-light, #9A5B86);
+    border-radius: 4px;
+}
+
+.skills-scroll-box::-webkit-scrollbar-thumb:hover {
+    background: var(--purple-dark, #51294C);
 }

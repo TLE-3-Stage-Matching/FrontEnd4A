@@ -1,138 +1,102 @@
-/* Serving the main stage realness */
-html, body, #root {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-}
-
-.landing-container,
 .login-form-container {
-    height: 100vh;
+    width: 90%;
+    max-width: 450px;
+    margin: 60px auto;
+    padding: 2.5rem;
+    background-color: var(--white);
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    box-sizing: border-box;
-    padding: 2rem;
 }
 
-.landing-subtitle {
-    color: #666;
-    font-size: 0.9rem;
-    margin-bottom: 3rem;
-}
-
-.landing-prompt {
-    font-size: 1.2rem;
-    font-weight: 400;
-    margin-bottom: 2rem;
-}
-
-.landing-divider {
-    width: 60%;
-    max-width: 800px;
-    border: none;
-    border-top: 1px solid #ccc;
-    margin-bottom: 3rem;
-}
-
-/* Flexbox for the holy trinity of roles */
-.cards-container {
-    display: flex;
-    gap: 2rem;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-/* Serving card looks */
-.role-card {
-    border: 1px solid #111;
-    background-color: #fff;
-    width: 260px;
-    height: 280px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-/* A little bounce when you hover, we love a dynamic queen */
-.role-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
-}
-
-.icon-circle {
-    width: 70px;
-    height: 70px;
-    border: 2px solid #111;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.login-form-container h1 {
+    font-size: 1.8rem;
+    margin-top: 1rem;
     margin-bottom: 1.5rem;
-}
-
-.icon-circle svg {
-    width: 32px;
-    height: 32px;
-    color: #111;
-}
-
-.role-card h3 {
-    font-size: 1.1rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    letter-spacing: 0.5px;
-}
-
-.role-card p {
-    color: #666;
-    font-size: 0.8rem;
+    line-height: 1.2;
     text-align: center;
-    margin: 0;
-}
-
-/* The dressing room for the login form */
-.login-form-container {
-    max-width: 400px;
-    margin: 0 auto;
-    padding: 2rem;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    background-color: #fff;
-    color: #111;
+    word-wrap: break-word;
 }
 
 .back-button {
     background: none;
     border: none;
-    color: #646cff;
+    color: var(--purple-main);
     cursor: pointer;
     padding: 0;
-    margin-bottom: 1rem;
+    text-align: left;
     font-size: 0.9rem;
+    margin-bottom: 1rem;
 }
 
 .back-button:hover {
     text-decoration: underline;
-    background: none;
 }
 
-.submit-button {
+.form-group {
+    margin-bottom: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.form-group input {
     width: 100%;
     padding: 0.75rem;
-    background-color: #111;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
 }
 
-.submit-button:hover {
-    background-color: #333;
+.btn-primary {
+    width: 100%;
+    padding: 0.8rem;
+    background-color: var(--purple-main);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 1rem;
+}
+
+.btn-primary:hover {
+    background-color: var(--purple-soft);
+}
+
+.btn-primary:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.register-link a {
+    color: var(--purple-main);
+    font-weight: 600;
+    text-decoration: none;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: color 0.2s, text-decoration 0.2s;
+}
+
+.register-link a:hover {
+    text-decoration: underline;
+    color: var(--purple-soft);
+}
+
+.register-link a:focus-visible {
+    outline: 3px solid var(--purple-main);
+    outline-offset: 2px;
+    text-decoration: underline;
+}
+
+.register-link a:focus {
+    outline: none;
 }
