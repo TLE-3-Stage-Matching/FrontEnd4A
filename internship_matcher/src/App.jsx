@@ -148,11 +148,46 @@ const Layout = () => {
         navigate('/dashboard/bedrijf');
     }, [navigate]);
 
+    const deleteVacancy = useCallback(async (id) => {
+        try {
+
+            await api.deleteVacancy(id);
+
+            setAppData(prev => ({
+                ...prev,
+                vacancies: prev.vacancies.filter(v => v.id !== id)
+            }));
+        } catch (error) {
+            console.error("Fout bij verwijderen vacature:", error);
+            alert("Er is iets misgegaan bij het verwijderen van de vacature.");
+        }
+    }, []);
+
     const syncStudentTags = useCallback(async (tags) => {
         await api.syncStudentTags(tags);
         const {data} = await api.getStudentProfile();
         setAppData(prev => ({...prev, studentProfile: data}));
     }, []);
+
+
+    const updateVacancy = useCallback(async (id, data) => {
+        try {
+            // 1. Send the updated data to the Laravel backend
+            const res = await api.updateVacancy(id, data);
+
+            // 2. Update the specific vacancy in the React state so the dashboard refreshes
+            setAppData(prev => ({
+                ...prev,
+                vacancies: prev.vacancies.map(v => v.id === id ? (res.data || res) : v)
+            }));
+
+            // 3. Send the user back to the dashboard
+            navigate('/dashboard/bedrijf');
+        } catch (error) {
+            console.error("Fout bij updaten vacature:", error);
+            alert("Er is iets misgegaan bij het opslaan van de wijzigingen.");
+        }
+    }, [navigate]);
 
     const contextValue = {
         user, isAuthenticated, isLoading,
@@ -162,6 +197,8 @@ const Layout = () => {
         students: appData.allStudents || [],
         ...appData,
         addVacancy,
+        deleteVacancy,
+        updateVacancy,
         syncStudentTags
     };
 
