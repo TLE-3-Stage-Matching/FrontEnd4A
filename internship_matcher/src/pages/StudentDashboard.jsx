@@ -2,6 +2,7 @@ import React, {useEffect, useContext} from 'react';
 import {Link} from 'react-router-dom';
 import {AppContext} from '../context/AppContext';
 import '../components/companydashboard.css';
+import LearningGoals from "../components/LearningGoals.jsx";
 
 const StudentDashboard = () => {
     const {logout} = useContext(AppContext);
@@ -23,6 +24,7 @@ const StudentDashboard = () => {
             <Link to="/vacatures" className="btn-primary" style={{marginTop: '2rem', display: 'inline-block'}}>
                 Bekijk Beschikbare Stages
             </Link>
+            <LearningGoals/>
         </div>
     );
 }

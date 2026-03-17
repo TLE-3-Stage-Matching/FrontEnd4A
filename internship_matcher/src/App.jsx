@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useCallback} from 'react';
+import React, {useEffect, useState, useCallback, useRef} from 'react';
 import {createBrowserRouter, Outlet, RouterProvider, useNavigate} from "react-router-dom";
 import {AppContext} from './context/AppContext';
 import * as api from './api/client.js';
@@ -21,6 +21,7 @@ import MatchesDetails from "./pages/MatchesDetails.jsx";
 import StudentApplications from "./components/StudentApplications.jsx";
 import './App.css';
 import Sandbox from "./pages/Sandbox.jsx";
+import Toast from "./components/Toast.jsx";
 
 const Layout = () => {
     const [user, setUser] = useState(null);
@@ -31,8 +32,11 @@ const Layout = () => {
         tags: [],
         allStudents: [],
         studentProfile: null,
+        learningGoals: JSON.parse(localStorage.getItem('learningGoals')) || [],
     });
 
+    const [toastMessage, setToastMessage] = useState(null);
+    const toastTimeoutRef = useRef(null);
     const navigate = useNavigate();
 
     // Session Validation
@@ -154,20 +158,89 @@ const Layout = () => {
         setAppData(prev => ({...prev, studentProfile: data}));
     }, []);
 
+    //////// LEERDOELEN OPSLAAN IN CONTEXT//////
+    const showToast = useCallback((message) => {
+        if (toastTimeoutRef.current) return;
+
+        setToastMessage(message);
+
+        toastTimeoutRef.current = setTimeout(() => {
+            setToastMessage(null);
+            toastTimeoutRef.current = null;
+        }, 1000);
+    }, []);
+
+    const saveLearningGoal = useCallback((vacancy, skill) => {
+        setAppData(prev => {
+            const existingGoals = prev.learningGoals || [];
+            const vacancyIndex = existingGoals.findIndex(g => g.vacancy.id === vacancy.id);
+
+            let updatedGoals; // We create a variable to hold the new array
+
+            if (vacancyIndex >= 0) {
+                updatedGoals = [...existingGoals];
+                const hasSkill = updatedGoals[vacancyIndex].skills.some(s => s.id === skill.id);
+                if (!hasSkill) {
+                    updatedGoals[vacancyIndex].skills.push(skill);
+                }
+            } else {
+                updatedGoals = [...existingGoals, {vacancy, skills: [skill]}];
+            }
+
+            // === THE NEW LINE ===
+            // Save the updated array directly to the browser's local storage
+            localStorage.setItem('learningGoals', JSON.stringify(updatedGoals));
+
+            // Return the updated state to React
+            return {...prev, learningGoals: updatedGoals};
+        });
+        showToast(`Leerdoel '${skill.name}' opgeslagen!`);
+    }, [showToast]);
+
+    //////// LEERDOEL VERWIJDEREN ////////
+    const removeLearningGoal = useCallback((vacancyId, skillId) => {
+        setAppData(prev => {
+            const existingGoals = prev.learningGoals || [];
+
+            // Filter out the specific skill, and then filter out any vacancies that have 0 skills left
+            const updatedGoals = existingGoals.map(goal => {
+                if (goal.vacancy.id === vacancyId) {
+                    return {
+                        ...goal,
+                        skills: goal.skills.filter(skill => skill.id !== skillId)
+                    };
+                }
+                return goal;
+            }).filter(goal => goal.skills.length > 0); // Removes the whole block if empty
+
+            // Update local storage so the deletion is permanent
+            localStorage.setItem('learningGoals', JSON.stringify(updatedGoals));
+
+            return {...prev, learningGoals: updatedGoals};
+        });
+    }, []);
+
     const contextValue = {
         user, isAuthenticated, isLoading,
         login: handleLogin,
         logout: handleLogout,
         createStudentUser,
         students: appData.allStudents || [],
-        ...appData,
+        vacancies: appData.vacancies || [],
+        tags: appData.tags || [],
+        studentProfile: appData.studentProfile,
+        learningGoals: appData.learningGoals || [],
+        saveLearningGoal,
+        removeLearningGoal,
         addVacancy,
         syncStudentTags
     };
 
+
     return (
         <AppContext.Provider value={contextValue}>
             <Outlet/>
+            <Toast message={toastMessage}/>
         </AppContext.Provider>
     );
 };
