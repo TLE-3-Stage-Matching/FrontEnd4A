@@ -100,6 +100,7 @@ export const getPublicVacancies = () => apiRequest('/vacancies'); // Added this 
 
 // === Vacancies (Company) ===
 export const getCompanyVacancies = () => apiRequest('/company/vacancies');
+export const getVacancy = (id) => apiRequest(`/company/vacancies/${id}`);
 export const createVacancy = (vacancyData) => apiRequest('/company/vacancies', {
     method: 'POST',
     body: JSON.stringify(vacancyData),

@@ -39,6 +39,17 @@ const Layout = () => {
     const toastTimeoutRef = useRef(null);
     const navigate = useNavigate();
 
+    const showToast = useCallback((message) => {
+        if (toastTimeoutRef.current) return;
+
+        setToastMessage(message);
+
+        toastTimeoutRef.current = setTimeout(() => {
+            setToastMessage(null);
+            toastTimeoutRef.current = null;
+        }, 1000);
+    }, []);
+
     // Session Validation
     useEffect(() => {
         const validateSession = async () => {
@@ -152,30 +163,53 @@ const Layout = () => {
         navigate('/dashboard/bedrijf');
     }, [navigate]);
 
+    const deleteVacancy = useCallback(async (id) => {
+        try {
+
+            await api.deleteVacancy(id);
+
+            setAppData(prev => ({
+                ...prev,
+                vacancies: prev.vacancies.filter(v => v.id !== id)
+            }));
+        } catch (error) {
+            console.error("Fout bij verwijderen vacature:", error);
+            alert("Er is iets misgegaan bij het verwijderen van de vacature.");
+        }
+    }, []);
+
     const syncStudentTags = useCallback(async (tags) => {
         await api.syncStudentTags(tags);
         const {data} = await api.getStudentProfile();
         setAppData(prev => ({...prev, studentProfile: data}));
     }, []);
 
-    //////// LEERDOELEN OPSLAAN IN CONTEXT//////
-    const showToast = useCallback((message) => {
-        if (toastTimeoutRef.current) return;
 
-        setToastMessage(message);
+    const updateVacancy = useCallback(async (id, data) => {
+        try {
+            // 1. Send the updated data to the Laravel backend
+            const res = await api.updateVacancy(id, data);
 
-        toastTimeoutRef.current = setTimeout(() => {
-            setToastMessage(null);
-            toastTimeoutRef.current = null;
-        }, 1000);
-    }, []);
+            // 2. Update the specific vacancy in the React state so the dashboard refreshes
+            setAppData(prev => ({
+                ...prev,
+                vacancies: prev.vacancies.map(v => v.id === id ? (res.data || res) : v)
+            }));
+
+            // 3. Send the user back to the dashboard
+            navigate('/dashboard/bedrijf');
+        } catch (error) {
+            console.error("Fout bij updaten vacature:", error);
+            alert("Er is iets misgegaan bij het opslaan van de wijzigingen.");
+        }
+    }, [navigate]);
 
     const saveLearningGoal = useCallback((vacancy, skill) => {
         setAppData(prev => {
             const existingGoals = prev.learningGoals || [];
             const vacancyIndex = existingGoals.findIndex(g => g.vacancy.id === vacancy.id);
 
-            let updatedGoals; // We create a variable to hold the new array
+            let updatedGoals;
 
             if (vacancyIndex >= 0) {
                 updatedGoals = [...existingGoals];
@@ -187,22 +221,17 @@ const Layout = () => {
                 updatedGoals = [...existingGoals, {vacancy, skills: [skill]}];
             }
 
-            // === THE NEW LINE ===
-            // Save the updated array directly to the browser's local storage
             localStorage.setItem('learningGoals', JSON.stringify(updatedGoals));
-
-            // Return the updated state to React
             return {...prev, learningGoals: updatedGoals};
         });
+
         showToast(`Leerdoel '${skill.name}' opgeslagen!`);
     }, [showToast]);
 
-    //////// LEERDOEL VERWIJDEREN ////////
     const removeLearningGoal = useCallback((vacancyId, skillId) => {
         setAppData(prev => {
             const existingGoals = prev.learningGoals || [];
 
-            // Filter out the specific skill, and then filter out any vacancies that have 0 skills left
             const updatedGoals = existingGoals.map(goal => {
                 if (goal.vacancy.id === vacancyId) {
                     return {
@@ -211,11 +240,9 @@ const Layout = () => {
                     };
                 }
                 return goal;
-            }).filter(goal => goal.skills.length > 0); // Removes the whole block if empty
+            }).filter(goal => goal.skills.length > 0);
 
-            // Update local storage so the deletion is permanent
             localStorage.setItem('learningGoals', JSON.stringify(updatedGoals));
-
             return {...prev, learningGoals: updatedGoals};
         });
     }, []);
@@ -233,6 +260,8 @@ const Layout = () => {
         saveLearningGoal,
         removeLearningGoal,
         addVacancy,
+        deleteVacancy,
+        updateVacancy,
         syncStudentTags
     };
 
