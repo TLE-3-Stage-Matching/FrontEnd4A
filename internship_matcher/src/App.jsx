@@ -1,27 +1,29 @@
-import React, {useEffect, useState, useCallback, useRef} from 'react';
-import {createBrowserRouter, Outlet, RouterProvider, useNavigate} from "react-router-dom";
+import {useState, useEffect, useContext, useCallback} from 'react';
+import {createBrowserRouter, RouterProvider, Outlet, useNavigate, Navigate} from "react-router-dom";
 import {AppContext} from './context/AppContext';
 import * as api from './api/client.js';
 
-// Page Imports
+// --- Component Imports ---
 import HomePage from "./pages/Home.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
-import Profile from "./pages/Profile.jsx";
 import CompanyRegistrationPage from "./pages/CompanyRegistrationPage.jsx";
 import CoordinatorRegistrationPage from "./pages/CoordinatorRegistrationPage.jsx";
-import StudentOnboarding from "./pages/StudentOnboarding.jsx";
-import StudentDashboard from "./pages/StudentDashboard.jsx";
 import CompanyDashboard from "./pages/CompanyDashboard.jsx";
+import StudentDashboard from "./pages/StudentDashboard.jsx";
 import CoordinatorDashboard from "./pages/CoordinatorDashboard.jsx";
 import CreateVacancy from "./pages/CreateVacancy.jsx";
+import Profile from "./pages/Profile.jsx";
+import StudentOnboarding from "./pages/StudentOnboarding.jsx";
 import VacancyListings from "./pages/VacancyListings.jsx";
-import CreateStudent from "./pages/CreateNewStudent.jsx";
-import StudentResult from "./pages/StudentResult.jsx";
-import MatchesDetails from "./pages/MatchesDetails.jsx";
-import StudentApplications from "./components/StudentApplications.jsx";
+import StudentApplicationsPage from './pages/StudentApplicationsPage.jsx';
 import './App.css';
-import Sandbox from "./pages/Sandbox.jsx";
-import Toast from "./components/Toast.jsx";
+
+const PrivateRoute = ({children}) => {
+    const {isAuthenticated, isLoading} = useContext(AppContext);
+    if (isLoading) return <div className="dashboard-container"><h1>Sessie controleren...</h1></div>;
+    if (!isAuthenticated) return <Navigate to="/login" replace/>;
+    return children;
+};
 
 const Layout = () => {
     const [user, setUser] = useState(null);
@@ -32,11 +34,8 @@ const Layout = () => {
         tags: [],
         allStudents: [],
         studentProfile: null,
-        learningGoals: JSON.parse(localStorage.getItem('learningGoals')) || [],
+        allCompanies: [],
     });
-
-    const [toastMessage, setToastMessage] = useState(null);
-    const toastTimeoutRef = useRef(null);
     const navigate = useNavigate();
 
     const showToast = useCallback((message) => {
@@ -56,8 +55,8 @@ const Layout = () => {
             const token = localStorage.getItem('token');
             if (token) {
                 try {
-                    const {data} = await api.getMe();
-                    setUser(data);
+                    const {data: userData} = await api.getMe();
+                    setUser(userData);
                     setIsAuthenticated(true);
                 } catch (error) {
                     localStorage.removeItem('token');
@@ -68,33 +67,36 @@ const Layout = () => {
         validateSession();
     }, []);
 
-    // Role-based Data Fetching
     useEffect(() => {
         if (!isAuthenticated || !user) return;
-
         const loadDashboardData = async () => {
             setIsLoading(true);
             try {
                 const {data: tags} = await api.getTags();
+                let newAppData = {tags};
 
                 if (user.role === 'student') {
                     const {data: profile} = await api.getStudentProfile();
-                    let vacancies = [];
+                    newAppData.studentProfile = profile;
                     if (profile.student_tags?.length > 0) {
                         const vacRes = await api.getPublicVacancies();
-                        vacancies = vacRes.data || vacRes;
+                        newAppData.vacancies = vacRes.data || [];
+                        setAppData(prev => ({...prev, ...newAppData}));
+                        navigate('/dashboard/student');
+                    } else {
+                        setAppData(prev => ({...prev, ...newAppData}));
+                        navigate('/onboarding/student');
                     }
-                    setAppData(prev => ({...prev, tags, studentProfile: profile, vacancies}));
-                    navigate(profile.student_tags?.length > 0 ? '/dashboard/student' : '/onboarding/student');
                 } else if (user.role === 'company') {
                     const vacRes = await api.getCompanyVacancies();
-                    setAppData(prev => ({...prev, tags, vacancies: vacRes.data || vacRes}));
+                    newAppData.vacancies = vacRes.data || [];
+                    setAppData(prev => ({...prev, ...newAppData}));
                     navigate('/dashboard/bedrijf');
                 } else if (user.role === 'coordinator') {
-                    const stuRes = await api.getStudents();
-                    // Safety check for array
-                    const students = Array.isArray(stuRes) ? stuRes : (stuRes.data || []);
-                    setAppData(prev => ({...prev, tags, allStudents: students}));
+                    const [stuRes, compRes] = await Promise.all([api.getUsers('student'), api.getCompanies()]);
+                    newAppData.allStudents = stuRes.data || [];
+                    newAppData.allCompanies = compRes.data || [];
+                    setAppData(prev => ({...prev, ...newAppData}));
                     navigate('/dashboard/coordinator');
                 }
             } catch (error) {
@@ -103,11 +105,9 @@ const Layout = () => {
                 setIsLoading(false);
             }
         };
-
         loadDashboardData();
     }, [user, isAuthenticated, navigate]);
 
-    // --- MEMOIZED FUNCTIONS USING useCallback ---
     const handleLogin = useCallback(async (email, password) => {
         const {token} = await api.login(email, password);
         localStorage.setItem('token', token);
@@ -121,11 +121,23 @@ const Layout = () => {
             localStorage.removeItem('token');
             setUser(null);
             setIsAuthenticated(false);
-            setAppData({vacancies: [], tags: [], allStudents: [], studentProfile: null});
+            setAppData({vacancies: [], tags: [], allStudents: [], studentProfile: null, allCompanies: []});
             navigate('/login');
         }
     }, [navigate]);
 
+    const handleUpdateCompanyStatus = useCallback(async (companyId, isActive) => {
+        const {data: updatedCompany} = await api.updateCompany(companyId, {is_active: isActive});
+        setAppData(prev => ({
+            ...prev,
+            allCompanies: prev.allCompanies.map(c => c.id === companyId ? updatedCompany : c)
+        }));
+    }, []);
+
+    const handleSyncStudentTags = useCallback(async (tagsPayload) => {
+        await api.syncStudentTags(tagsPayload);
+        const {data: updatedProfile} = await api.getStudentProfile();
+        setAppData(prev => ({...prev, studentProfile: updatedProfile}));
     const createStudentUser = useCallback(async (payload) => {
         setIsLoading(true);
         try {
@@ -248,9 +260,12 @@ const Layout = () => {
     }, []);
 
     const contextValue = {
-        user, isAuthenticated, isLoading,
+        user, isAuthenticated, isLoading, ...appData,
         login: handleLogin,
         logout: handleLogout,
+        updateCompanyStatus: handleUpdateCompanyStatus,
+        syncStudentTags: handleSyncStudentTags,
+        createStudentUser: api.createStudentUser,
         createStudentUser,
         students: appData.allStudents || [],
         vacancies: appData.vacancies || [],
@@ -265,43 +280,33 @@ const Layout = () => {
         syncStudentTags
     };
 
-
-    return (
-        <AppContext.Provider value={contextValue}>
-            <Outlet/>
-            <Toast message={toastMessage}/>
-        </AppContext.Provider>
-    );
+    return <AppContext.Provider value={contextValue}><Outlet/></AppContext.Provider>;
 };
 
-// Router remains exactly the same as your original file
 function App() {
-    const router = createBrowserRouter([{
-        element: <Layout/>,
-        children: [
-            {path: "/", element: <HomePage/>},
-            {path: "/login", element: <LoginPage/>},
-            {path: "/profiel", element: <Profile/>},
-            {path: "/dashboard/student", element: <StudentDashboard/>},
-            {path: "/dashboard/bedrijf", element: <CompanyDashboard/>},
-            {path: "/dashboard/coordinator", element: <CoordinatorDashboard/>},
-            {path: "/register/bedrijf", element: <CompanyRegistrationPage/>},
-            {path: "/register/coordinator", element: <CoordinatorRegistrationPage/>},
-            {path: "/onboarding/student", element: <StudentOnboarding/>},
-            {path: "/vacatures", element: <VacancyListings/>},
-            {path: "/vacature/nieuw", element: <CreateVacancy/>},
-            {path: "/vacature/bewerken/:id", element: <CreateVacancy/>},
-            // For the Company (Defaults to role="company")
-            {path: "/vacature/:id/kandidaten", element: <StudentApplications/>},
-            // For the Coordinator
-            {path: "/coordinator/student/:id", element: <StudentApplications role="coordinator"/>},
-            {path: "/create/student", element: <CreateStudent/>},
-            {path: "/matches", element: <MatchesDetails/>},
-            {path: "/resultaten", element: <StudentResult/>},
-            {path: "/sandbox/:id", element: <Sandbox/>},
-            {path: "/vacancies/:id", element: <Sandbox/>}
-        ]
-    }]);
+    const router = createBrowserRouter([
+        {
+            element: <Layout/>,
+            children: [
+                {path: "/", element: <HomePage/>},
+                {path: "/login", element: <LoginPage/>},
+                {path: "/register/bedrijf", element: <CompanyRegistrationPage/>},
+                {path: "/register/coordinator", element: <CoordinatorRegistrationPage/>},
+                {path: "/profiel", element: <PrivateRoute><Profile/></PrivateRoute>},
+                {path: "/onboarding/student", element: <PrivateRoute><StudentOnboarding/></PrivateRoute>},
+                {path: "/dashboard/bedrijf", element: <PrivateRoute><CompanyDashboard/></PrivateRoute>},
+                {path: "/dashboard/student", element: <PrivateRoute><StudentDashboard/></PrivateRoute>},
+                {path: "/dashboard/coordinator", element: <PrivateRoute><CoordinatorDashboard/></PrivateRoute>},
+                {path: "/vacature/nieuw", element: <PrivateRoute><CreateVacancy/></PrivateRoute>},
+                {path: "/vacature/bewerken/:id", element: <PrivateRoute><CreateVacancy/></PrivateRoute>},
+                {path: "/vacatures", element: <PrivateRoute><VacancyListings/></PrivateRoute>},
+                {
+                    path: "/coordinator/student/:studentId/applications",
+                    element: <PrivateRoute><StudentApplicationsPage/></PrivateRoute>
+                },
+            ]
+        }
+    ]);
     return <RouterProvider router={router}/>;
 }
 
