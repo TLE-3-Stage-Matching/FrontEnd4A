@@ -1,5 +1,6 @@
-import React, {useState, useMemo} from "react";
+import React, {useState, useMemo, useContext} from "react";
 import {Link, useParams} from "react-router-dom";
+import {AppContext} from "../context/AppContext";
 
 // --- 1. MOCK DATA (Gebaseerd op je wireframe) ---
 const vacancy = {
@@ -23,7 +24,7 @@ const vacancy = {
 
 const Sandbox = () => {
     const {id} = useParams();
-
+    const {saveLearningGoal} = useContext(AppContext);
     // --- 2. STATE ---
     const [activeSkillIds, setActiveSkillIds] = useState([1, 3, 6]);
 
@@ -76,8 +77,8 @@ const Sandbox = () => {
 
             {/* Header */}
             <div className="sandbox-header">
-                <Link to="/matches" className="sandbox-back-link">
-                    ← Terug naar Matches
+                <Link to="/Vacatures" className="sandbox-back-link">
+                    ← Terug naar Vacatures
                 </Link>
                 <div className="sandbox-title-group">
                     <h1>Wat-als Simulator</h1>
@@ -164,9 +165,30 @@ const Sandbox = () => {
 
                             {matchData.recommendations.length > 0 ? (
                                 matchData.recommendations.map(rec => (
-                                    <div key={rec.id} className="recommendation-row">
-                                        <span>Leer <strong>{rec.name}</strong></span>
-                                        <span className="gain">+{rec.percentGain}%</span>
+                                    <div key={rec.id} className="recommendation-row" style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center'
+                                    }}>
+                                        <div>
+                                            <span style={{fontSize: '14px'}}>Leer <strong>{rec.name}</strong></span>
+                                            <span className="gain" style={{
+                                                marginLeft: '10px',
+                                                color: '#729933'
+                                            }}>+{rec.percentGain}%</span>
+                                        </div>
+
+                                        {/* 3. Add the Save Button */}
+                                        <button
+                                            onClick={() => saveLearningGoal(vacancy, rec)}
+                                            style={{
+                                                padding: '6px 12px', backgroundColor: 'var(--purple-light, #9A5B86)',
+                                                color: 'white', border: 'none', borderRadius: '4px',
+                                                cursor: 'pointer', fontSize: '12px', fontWeight: '500'
+                                            }}
+                                        >
+                                            Sla op als Leerdoel
+                                        </button>
                                     </div>
                                 ))
                             ) : (

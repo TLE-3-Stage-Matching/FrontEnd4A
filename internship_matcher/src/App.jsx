@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useCallback} from 'react';
+import React, {useEffect, useState, useCallback, useRef} from 'react';
 import {createBrowserRouter, Outlet, RouterProvider, useNavigate} from "react-router-dom";
 import {AppContext} from './context/AppContext';
 import * as api from './api/client.js';
@@ -21,6 +21,7 @@ import MatchesDetails from "./pages/MatchesDetails.jsx";
 import StudentApplications from "./components/StudentApplications.jsx";
 import './App.css';
 import Sandbox from "./pages/Sandbox.jsx";
+import Toast from "./components/Toast.jsx";
 
 const Layout = () => {
     const [user, setUser] = useState(null);
@@ -31,8 +32,11 @@ const Layout = () => {
         tags: [],
         allStudents: [],
         studentProfile: null,
+        learningGoals: JSON.parse(localStorage.getItem('learningGoals')) || [],
     });
 
+    const [toastMessage, setToastMessage] = useState(null);
+    const toastTimeoutRef = useRef(null);
     const navigate = useNavigate();
 
     // Session Validation
@@ -195,16 +199,23 @@ const Layout = () => {
         logout: handleLogout,
         createStudentUser,
         students: appData.allStudents || [],
-        ...appData,
+        vacancies: appData.vacancies || [],
+        tags: appData.tags || [],
+        studentProfile: appData.studentProfile,
+        learningGoals: appData.learningGoals || [],
+        saveLearningGoal,
+        removeLearningGoal,
         addVacancy,
         deleteVacancy,
         updateVacancy,
         syncStudentTags
     };
 
+
     return (
         <AppContext.Provider value={contextValue}>
             <Outlet/>
+            <Toast message={toastMessage}/>
         </AppContext.Provider>
     );
 };
