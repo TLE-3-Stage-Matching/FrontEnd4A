@@ -81,6 +81,7 @@ const VacancyListings = () => {
                                 vacancySkills={vacancy.vacancy_requirements}
                             />
                             <Link to={`/vacature/student/${vacancy.id}`} className="btn-primary">Bekijk Details</Link>
+                            <Link to={`/vacancies/${vacancy.id}`} className="btn-primary">Sandbox</Link>
                         </div>
                     );
                 })}
