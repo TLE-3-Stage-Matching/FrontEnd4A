@@ -1,11 +1,30 @@
-import React, {useState, useEffect, useContext} from 'react';
+import React, {useState, useContext} from 'react';
 import {useNavigate, Link} from 'react-router-dom';
 import {AppContext} from '../context/AppContext';
+import * as api from '../api/client';
 import '../components/companydashboard.css';
+
 
 const CompanyDashboard = () => {
     const {vacancies, deleteVacancy, logout} = useContext(AppContext);
     const navigate = useNavigate();
+
+    const [selectedVacancy, setSelectedVacancy] = useState(null);
+    const [isModalLoading, setIsModalLoading] = useState(false);
+
+    const closeModal = () => setSelectedVacancy(null);
+
+    const handleVacancyClick = async (id) => {
+        setIsModalLoading(true);
+        try {
+            const response = await api.getVacancy(id);
+            setSelectedVacancy(response.data || response);
+        } catch (error) {
+            console.error("Failed to fetch vacancy details:", error);
+        } finally {
+            setIsModalLoading(false);
+        }
+    };
 
     const handleLogout = () => {
         logout();
@@ -19,6 +38,7 @@ const CompanyDashboard = () => {
     };
 
     return (
+
         <div className="dashboard-container">
             <header className="header-row">
                 <div className="brand-section">
@@ -55,7 +75,9 @@ const CompanyDashboard = () => {
 
             <div className="vacancy-list">
                 {vacancies.map((vacancy) => (
-                    <div key={vacancy.id} className="vacancy-card">
+
+                    <div key={vacancy.id} className="vacancy-card" onClick={() => handleVacancyClick(vacancy.id)}
+                         style={{cursor: 'pointer'}}>
                         <div className="vacancy-side-block">
                             <h3>{vacancy.title}</h3>
                         </div>
@@ -71,7 +93,10 @@ const CompanyDashboard = () => {
                                 </div>
                                 <button
                                     className="btn-view-candidates"
-                                    onClick={() => navigate(`/vacature/${vacancy.id}/kandidaten`)}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigate(`/vacature/${vacancy.id}/kandidaten`)
+                                    }}
                                     aria-label={`Bekijk kandidaten voor ${vacancy.title}`}
                                     style={{marginTop: '10px'}}
                                 >
@@ -82,14 +107,20 @@ const CompanyDashboard = () => {
                             <div className="action-buttons" style={{display: 'flex', gap: '10px'}}>
                                 <button
                                     className="btn-action-icon"
-                                    onClick={() => navigate(`/vacature/bewerken/${vacancy.id}`)}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigate(`/vacature/bewerken/${vacancy.id}`)
+                                    }}
                                     aria-label={`Bewerk ${vacancy.title}`}
                                 >
                                     <span aria-hidden="true">✏️</span>
                                 </button>
                                 <button
                                     className="btn-action-icon"
-                                    onClick={() => handleDelete(vacancy.id, vacancy.title)}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDelete(vacancy.id, vacancy.title)
+                                    }}
                                     aria-label={`Verwijder ${vacancy.title}`}
                                 >
                                     <span aria-hidden="true">🗑️</span>
@@ -99,6 +130,61 @@ const CompanyDashboard = () => {
                     </div>
                 ))}
             </div>
+            {selectedVacancy && (
+                <div
+                    className="vacancy-modal-overlay"
+                    onClick={(e) => {
+                        // Only close if the background (overlay) itself is clicked
+                        if (e.target === e.currentTarget) closeModal();
+                    }}
+                >
+                    <div className="vacancy-modal-content">
+                        <h2>{selectedVacancy.title}</h2>
+                        <div style={{display: 'flex', gap: '10px', marginBottom: '15px'}}>
+                            <span className="vacancy-badge">Status: {selectedVacancy.status || 'Open'}</span>
+                            <span className="vacancy-badge">{selectedVacancy.hours_per_week} uur/week</span>
+                        </div>
+
+                        <h4>Beschrijving</h4>
+                        <p>{selectedVacancy.description}</p>
+
+                        {selectedVacancy.offer_text && (
+                            <>
+                                <h4>Wat wij bieden</h4>
+                                <p>{selectedVacancy.offer_text}</p>
+                            </>
+                        )}
+
+                        {selectedVacancy.expectations_text && (
+                            <>
+                                <h4>Verwachtingen</h4>
+                                <p>{selectedVacancy.expectations_text}</p>
+                            </>
+                        )}
+
+                        <h4>Gevraagde Vaardigheden (Tags)</h4>
+                        <div style={{display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '20px'}}>
+                            {selectedVacancy.vacancy_requirements?.map(req => (
+                                <span key={req.tag_id} className="vacancy-tag">
+                        {req.tag.name}
+                    </span>
+                            ))}
+                        </div>
+
+                        <div style={{display: 'flex', gap: '15px', marginTop: '20px'}}>
+                            <button onClick={closeModal} className="btn-outline">
+                                Sluiten
+                            </button>
+                            <button
+                                onClick={() => navigate(`/vacature/bewerken/${selectedVacancy.id}`)}
+                                className="btn-primary"
+                            >
+                                Bewerken
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -1,181 +1,165 @@
-import React, {useState, useMemo} from "react";
-import {Link, useParams} from "react-router-dom";
-
-// --- 1. MOCK DATA (Gebaseerd op je wireframe) ---
-const vacancy = {
-    id: 99,
-    title: "Back-end Stage - Python/Spring Boot (Java) Developer",
-    company: {name: "Erogon Media"},
-    minMatch: 80,
-    requirements: [
-        {id: 1, name: 'Python', importance: 1},
-        {id: 2, name: 'SQL', importance: 1},
-        {id: 3, name: 'Django', importance: 1},
-        {id: 4, name: 'Figma', importance: 0},
-        {id: 5, name: 'NextJS', importance: 0},
-        {id: 6, name: 'Spring Boot', importance: 1},
-        {id: 7, name: 'Docker', importance: 1},
-        {id: 8, name: 'Kubernetes', importance: 0},
-        {id: 9, name: 'Git', importance: 1},
-        {id: 10, name: 'Agile/Scrum', importance: 0},
-    ]
-};
+import React, {useState, useEffect, useContext} from "react";
+import {useParams, Link} from "react-router-dom";
+import {AppContext} from "../context/AppContext";
+import * as api from "../api/client";
+import "../components/Sandbox.css";
 
 const Sandbox = () => {
     const {id} = useParams();
+    const {saveLearningGoal, tags: allAvailableTags, studentProfile} = useContext(AppContext);
 
-    // --- 2. STATE ---
-    const [activeSkillIds, setActiveSkillIds] = useState([1, 3, 6]);
+    const [vacancy, setVacancy] = useState(null);
+    const [activeTags, setActiveTags] = useState([]);
+    const [matchResults, setMatchResults] = useState({percentage: 0, recommendations: []});
+    const [loading, setLoading] = useState(true);
 
-    // --- 3. DE REKENMACHINE ---
-    const matchData = useMemo(() => {
-        let totalPossiblePoints = 0;
-        let studentPoints = 0;
-        let recommendations = [];
+    useEffect(() => {
+        if (studentProfile?.student_tags) {
+            const initialTags = studentProfile.student_tags
+                .filter(t => t.tag_type === 'skill' || t.tag_type === 'trait')
+                .map(t => ({
+                    tag_id: t.tag_id || t.id,
+                    weight: t.weight || 3
+                }));
+            setActiveTags(initialTags);
+        }
+    }, [studentProfile]);
 
-        vacancy.requirements.forEach(req => {
-            const pointsValue = req.importance === 1 ? 2 : 1;
-            totalPossiblePoints += pointsValue;
+    // 2. De "Live" API koppeling
+    useEffect(() => {
+        if (!id) return;
 
-            if (activeSkillIds.includes(req.id)) {
-                studentPoints += pointsValue;
+        const syncSandbox = async () => {
+            try {
+                const response = await api.getSandboxVacancyDetail(id, activeTags);
+                console.log("Ruwe API Response:", response); // Check je console (F12)
+
+                // De v2 API nest de resultaten vaak onder 'data'
+                const result = response.data || response;
+
+                if (result) {
+                    // Update vacature (sommige velden kunnen veranderen door de sandbox)
+                    if (result.vacancy) setVacancy(result.vacancy);
+
+                    setMatchResults({
+                        // Check of de API 'match_score' of 'score' gebruikt
+                        percentage: result.match_score !== undefined ? result.match_score : (result.score || 0),
+                        // Check voor 'recommendations' of 'missing_tags'
+                        recommendations: result.recommendations || result.missing_tags || []
+                    });
+                }
+            } catch (err) {
+                console.error("Sandbox sync error:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        const timeoutId = setTimeout(syncSandbox, 300);
+        return () => clearTimeout(timeoutId);
+    }, [id, activeTags]);
+
+    const toggleTag = (tagId) => {
+        setActiveTags(prev => {
+            const exists = prev.find(t => t.tag_id === tagId);
+            if (exists) {
+                return prev.filter(t => t.tag_id !== tagId);
             } else {
-                recommendations.push({
-                    id: req.id,
-                    name: req.name,
-                    potentialPoints: pointsValue
-                });
+                if (prev.length >= 10) return prev;
+                return [...prev, {tag_id: tagId, weight: 3}];
             }
         });
-
-        const percentage = totalPossiblePoints === 0 ? 0 : Math.round((studentPoints / totalPossiblePoints) * 100);
-
-        const formattedRecs = recommendations.map(rec => ({
-            ...rec,
-            percentGain: Math.round((rec.potentialPoints / totalPossiblePoints) * 100)
-        })).sort((a, b) => b.percentGain - a.percentGain);
-
-        return {percentage, recommendations: formattedRecs};
-    }, [activeSkillIds]);
-
-    // --- 4. TOGGLE ACTION ---
-    const toggleSkill = (skillId) => {
-        setActiveSkillIds(prev =>
-            prev.includes(skillId)
-                ? prev.filter(id => id !== skillId)
-                : [...prev, skillId]
-        );
     };
 
-    // Dynamische kleuren voor de progress bar (CSS variabelen matchen)
-    const isPassing = matchData.percentage >= vacancy.minMatch;
-    const progressColor = isPassing ? "var(--green, #729933)" : "var(--yellow, #E9BF5D)";
+    if (loading && !vacancy) return <div className="loader">Simulator laden...</div>;
+
+    const isPassing = matchResults.percentage >= (vacancy?.min_match || 80);
+    const progressColor = isPassing ? "#729933" : "#E9BF5D";
 
     return (
         <div className="sandbox-container">
-
-            {/* Header */}
             <div className="sandbox-header">
-                <Link to="/matches" className="sandbox-back-link">
-                    ← Terug naar Matches
-                </Link>
+                <Link to="/vacatures" className="sandbox-back-link">← Terug naar Vacatures</Link>
                 <div className="sandbox-title-group">
                     <h1>Wat-als Simulator</h1>
-                    <span>Experimenteer met je profiel om te zien hoe dit je match-kansen beïnvloedt</span>
+                    <span className="sandbox-badge">SANDBOX MODUS</span>
                 </div>
             </div>
 
-            <div className="sandbox-content">
-
-                {/* Info Banner */}
-                <div className="info-banner">
-                    <div className="info-icon">i</div>
-                    <p><strong>Sandbox-omgeving:</strong> Wijzigingen hier zijn tijdelijk en beïnvloeden je echte
-                        profiel niet. Gebruik deze tool om te experimenteren en te leren welke skills of criteria je
-                        kansen vergroten.</p>
-                </div>
-
-                {/* Two Column Layout */}
-                <div className="sandbox-layout">
-
-                    {/* LEFT COLUMN: Toggles */}
-                    <div className="sandbox-card">
-                        <h3>Pas je profiel aan</h3>
-                        <h4>Skills & Competenties</h4>
-
-                        {/* DIT IS DE NIEUWE SCROLL WRAPPER */}
-                        <div className="skills-scroll-box">
-                            {vacancy.requirements.map(req => {
-                                const isActive = activeSkillIds.includes(req.id);
+            <div className="sandbox-layout">
+                {/* LINKS: De editor */}
+                <div className="sandbox-card">
+                    <h3>Experimenteer met Skills</h3>
+                    <p className="hint">Klik op skills om te zien wat het doet met je score.</p>
+                    <div className="skills-scroll-box">
+                        {allAvailableTags
+                            .filter(t => t.tag_type === 'skill')
+                            .map(tag => {
+                                const isActive = activeTags.some(at => at.tag_id === tag.id);
                                 return (
-                                    <div key={req.id} className="skill-row">
-                                        <span>{req.name}</span>
-                                        {/* Toggle Switch */}
+                                    <div key={tag.id} className="skill-row">
+                                        <span>{tag.name}</span>
                                         <div
                                             className={`toggle-switch ${isActive ? 'active' : ''}`}
-                                            onClick={() => toggleSkill(req.id)}
+                                            onClick={() => toggleTag(tag.id)}
                                         />
                                     </div>
                                 );
                             })}
-                        </div>
-                        {/* EINDE SCROLL WRAPPER */}
-
-
                     </div>
+                </div>
 
-                    {/* RIGHT COLUMN: Results */}
-                    <div className="sandbox-right-col">
+                {/* RECHTS: De live resultaten van de API */}
+                <div className="sandbox-right-col">
+                    <div className="sandbox-card impact-card">
+                        <div className="impact-header">
+                            <h3>{vacancy?.title}</h3>
+                            <span className="company-label">{vacancy?.company?.name}</span>
+                        </div>
 
-                        {/* Impact Card */}
-                        <div className="sandbox-card">
-                            <h3>Impact op stage</h3>
-
-                            <div className="impact-summary">
-                                <div className="job-title">{vacancy.title}</div>
-                                <div className="company-name">{vacancy.company.name}</div>
-                                <div className="min-match">Minimale match vereist: {vacancy.minMatch}%</div>
+                        <div className="score-display">
+                            <div className="score-circle" style={{borderColor: progressColor}}>
+                                <span className="score-value">{matchResults.percentage}%</span>
+                                <span className="score-label">Match</span>
                             </div>
+                        </div>
 
-                            <div className="score-row">
-                                <span className="label">Match score</span>
-                                <span className="value">{matchData.percentage}%</span>
-                            </div>
-
-                            {/* Progress Bar (Inline styles for dynamic width/color) */}
-                            <div className="progress-bar-container">
+                        <div className="progress-container">
+                            <div className="progress-bar">
                                 <div
-                                    className="progress-bar-fill"
-                                    style={{
-                                        width: `${matchData.percentage}%`,
-                                        backgroundColor: progressColor
-                                    }}
+                                    className="progress-fill"
+                                    style={{width: `${matchResults.percentage}%`, backgroundColor: progressColor}}
                                 />
                             </div>
-
-                            <div className="status-text" style={{color: progressColor}}>
-                                {isPassing ? "Je voldoet aan de minimale eis!" : "Je voldoet nog niet aan de minimale eis."}
-                            </div>
+                            <p className="status-msg" style={{color: progressColor}}>
+                                {isPassing ? "✓ Je voldoet aan de eisen" : "⚠ Je komt nog tekort"}
+                            </p>
                         </div>
+                    </div>
 
-                        {/* Recommendations Card */}
-                        <div className="sandbox-card">
-                            <h3>Aanbevelingen om je score te verhogen</h3>
-
-                            {matchData.recommendations.length > 0 ? (
-                                matchData.recommendations.map(rec => (
-                                    <div key={rec.id} className="recommendation-row">
-                                        <span>Leer <strong>{rec.name}</strong></span>
-                                        <span className="gain">+{rec.percentGain}%</span>
+                    <div className="sandbox-card">
+                        <h3>Verbeterpunten</h3>
+                        <p className="hint">De API adviseert deze skills voor deze vacature:</p>
+                        <div className="recommendations-list">
+                            {matchResults.recommendations.length > 0 ? (
+                                matchResults.recommendations.map(rec => (
+                                    <div key={rec.id} className="recommendation-item">
+                                        <div className="rec-info">
+                                            <span className="rec-name">{rec.name}</span>
+                                            <span className="rec-type">{rec.tag_type}</span>
+                                        </div>
+                                        <button
+                                            className="save-goal-btn"
+                                            onClick={() => saveLearningGoal(vacancy, rec)}
+                                        >
+                                            Leerdoel +
+                                        </button>
                                     </div>
                                 ))
                             ) : (
-                                <p style={{color: '#666', fontStyle: 'italic', fontSize: '14px'}}>
-                                    Je hebt alle gevraagde skills voor deze vacature geselecteerd!
-                                </p>
+                                <p className="empty-msg">Je bent de perfecte match!</p>
                             )}
                         </div>
-
                     </div>
                 </div>
             </div>

@@ -33,10 +33,22 @@ const CreateVacancy = () => {
     useEffect(() => {
         if (!isLoading && isEditMode) {
             const vacancyToEdit = vacancies.find(v => v.id === parseInt(id));
+
             if (vacancyToEdit) {
                 setTitle(vacancyToEdit.title);
                 setDescription(vacancyToEdit.description || '');
-                setSkills(vacancyToEdit.skills || []); 
+
+                // Map the backend 'vacancy_requirements' to the frontend 'skills' format
+                const mappedSkills = (vacancyToEdit.vacancy_requirements || []).map(req => {
+                    return {
+                        id: req.tag.id,
+                        name: req.tag.name,
+                        // If importance is 0 it's 'nice', otherwise default to 'must'
+                        type: req.importance === 1 ? 'nice' : 'must'
+                    };
+                });
+
+                setSkills(mappedSkills);
             }
         }
     }, [id, isEditMode, vacancies, isLoading]);
@@ -82,7 +94,7 @@ const CreateVacancy = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         const apiTags = skills.map(skill => {
-            const tagPayload = {importance: skill.type === 'must' ? 1 : 0};
+            const tagPayload = {importance: skill.type === 'must' ? 2 : 1};
             if (skill.id) tagPayload.id = skill.id;
             else {
                 tagPayload.name = skill.name;
