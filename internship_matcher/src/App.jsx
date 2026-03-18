@@ -48,8 +48,11 @@ const Layout = () => {
                     const {data} = await api.getMe();
                     setUser(data);
                     setIsAuthenticated(true);
+                    // Now that we have the user, load their data and navigate
+                    await loadDataAndNavigate(userData);
                 } catch (error) {
                     localStorage.removeItem('token');
+                    setIsLoading(false);
                 }
             }
             setIsLoading(false);
@@ -92,16 +95,15 @@ const Layout = () => {
                 setIsLoading(false);
             }
         };
-
-        loadDashboardData();
-    }, [user, isAuthenticated, navigate]);
+        validateSession();
+    }, []); // Runs only once
 
     // --- MEMOIZED FUNCTIONS USING useCallback ---
     const handleLogin = useCallback(async (email, password) => {
         const {token} = await api.login(email, password);
         localStorage.setItem('token', token);
-        const {data} = await api.getMe();
-        setUser(data);
+        const {data: userData} = await api.getMe();
+        setUser(userData);
         setIsAuthenticated(true);
     }, []);
 
@@ -219,6 +221,15 @@ const Layout = () => {
             return {...prev, learningGoals: updatedGoals};
         });
     }, []);
+
+    async function handleCreateStudent(payload) {
+        const newUser = await api.createStudentUser(payload);
+        setAppData(prev => ({
+            ...prev,
+            allStudents: [...(Array.isArray(prev.allStudents) ? prev.allStudents : []), newUser.data]
+        }));
+        return newUser;
+    }
 
     const contextValue = {
         user, isAuthenticated, isLoading,
