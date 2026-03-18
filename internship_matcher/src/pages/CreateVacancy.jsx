@@ -44,7 +44,7 @@ const CreateVacancy = () => {
                         id: req.tag.id,
                         name: req.tag.name,
                         // If importance is 0 it's 'nice', otherwise default to 'must'
-                        type: req.importance === 0 ? 'nice' : 'must'
+                        type: req.importance === 1 ? 'nice' : 'must'
                     };
                 });
 
@@ -94,7 +94,7 @@ const CreateVacancy = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         const apiTags = skills.map(skill => {
-            const tagPayload = {importance: skill.type === 'must' ? 1 : 0};
+            const tagPayload = {importance: skill.type === 'must' ? 2 : 1};
             if (skill.id) tagPayload.id = skill.id;
             else {
                 tagPayload.name = skill.name;
