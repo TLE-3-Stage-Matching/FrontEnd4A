@@ -1,7 +1,7 @@
 /* It's giving "onboarding glow-up". Let's style these tags. */
 
 :root {
-    --purple-main: #7a4988;
+    --primary-blue: #4F46E5;
     --light-gray: #F8F9FA;
     --border-gray: #E9ECEF;
     --text-dark: #212529;
@@ -90,26 +90,53 @@
 
 .available-tag {
     background-color: var(--light-gray);
-    border: 1px dashed var(--purple-main);
-    color: var(--purple-main);
+    border: 1px dashed var(--primary-blue);
+    color: var(--primary-blue);
 }
 
 .available-tag:hover {
-    background-color: #f4eaef; /* Use the soft purple background */
+    background-color: #e8e7fa;
 }
 
-/* ... */
 
-.available-tag:hover .add-plus {
-    background-color: var(--purple-main);
+.remove-x, .add-plus {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 10px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: #E9ECEF;
+    color: var(--text-light);
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.skill-tag:hover .remove-x {
+    background-color: #ff4d4d;
     color: white;
 }
 
-/* ... */
+.available-tag:hover .add-plus {
+    background-color: var(--primary-blue);
+    color: white;
+}
+
+.placeholder-text {
+    color: var(--text-light);
+    font-style: italic;
+}
 
 .submit-btn {
     width: 100%;
-    background-color: var(--purple-main);
+    background-color: var(--primary-blue);
     color: var(--white);
-    /* ... */
+    border: none;
+    padding: 15px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 20px;
 }
