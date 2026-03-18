@@ -1,0 +1,49 @@
+/* src/components/Pagination.css */
+
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.pagination-list {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+}
+
+.pagination-item button {
+    padding: 10px 16px;
+    border: none;
+    background-color: #fff;
+    color: var(--purple-main, #7a4988);
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background-color 0.2s, color 0.2s;
+    border-right: 1px solid #e9ecef;
+}
+
+.pagination-item:last-child button {
+    border-right: none;
+}
+
+.pagination-item button:hover {
+    background-color: #f1f3f5;
+}
+
+.pagination-item.active button {
+    background-color: var(--purple-main, #7a4988);
+    color: white;
+    cursor: default;
+}
+
+.pagination-item.disabled button {
+    color: #adb5bd;
+    cursor: not-allowed;
+    background-color: #f8f9fa;
+}
