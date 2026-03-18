@@ -43,7 +43,7 @@ export const apiRequest = async (path, options = {}) => {
             throw error;
         }
     }
-    
+
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({message: response.statusText}));
         throw new Error(errorData.message || 'API Error');
@@ -126,7 +126,7 @@ export const getApplicationsForVacancy = (vacancyId) => apiRequest(`/company/mat
 
 // Function for the Coordinator: Get all applications made by a specific student
 export const getApplicationsForStudent = (studentId) => apiRequest(`/coordinator/match-choices?student_user_id=${studentId}`);
-export const getApplicationsForStudent = (studentId) => apiRequest(`/coordinator/users/${studentId}/applications`);
+// export const getApplicationsForStudent = (studentId) => apiRequest(`/coordinator/users/${studentId}/applications`);
 
 // === Sandbox (v2) ===
 export const getSandboxVacancyDetail = (vacancyId, tags) =>
