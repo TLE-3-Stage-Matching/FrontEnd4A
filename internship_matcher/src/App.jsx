@@ -39,7 +39,7 @@ const Layout = () => {
     const toastTimeoutRef = useRef(null);
     const navigate = useNavigate();
 
-    // Session Validation
+    // 1. Session Validation (Runs once on load to check for existing token)
     useEffect(() => {
         const validateSession = async () => {
             const token = localStorage.getItem('token');
@@ -48,11 +48,8 @@ const Layout = () => {
                     const {data} = await api.getMe();
                     setUser(data);
                     setIsAuthenticated(true);
-                    // Now that we have the user, load their data and navigate
-                    await loadDataAndNavigate(userData);
                 } catch (error) {
                     localStorage.removeItem('token');
-                    setIsLoading(false);
                 }
             }
             setIsLoading(false);
@@ -60,7 +57,7 @@ const Layout = () => {
         validateSession();
     }, []);
 
-    // Role-based Data Fetching
+    // 2. Role-based Data Fetching (Runs whenever user logs in or auth state changes)
     useEffect(() => {
         if (!isAuthenticated || !user) return;
 
@@ -84,7 +81,6 @@ const Layout = () => {
                     navigate('/dashboard/bedrijf');
                 } else if (user.role === 'coordinator') {
                     const stuRes = await api.getStudents();
-                    // Safety check for array
                     const students = Array.isArray(stuRes) ? stuRes : (stuRes.data || []);
                     setAppData(prev => ({...prev, tags, allStudents: students}));
                     navigate('/dashboard/coordinator');
@@ -95,8 +91,10 @@ const Layout = () => {
                 setIsLoading(false);
             }
         };
-        validateSession();
-    }, []); // Runs only once
+
+        // Trigger the loading function
+        loadDashboardData();
+    }, [user, isAuthenticated, navigate]); // <-- THIS DEPENDENCY ARRAY WAS BROKEN!
 
     // --- MEMOIZED FUNCTIONS USING useCallback ---
     const handleLogin = useCallback(async (email, password) => {
@@ -105,6 +103,7 @@ const Layout = () => {
         const {data: userData} = await api.getMe();
         setUser(userData);
         setIsAuthenticated(true);
+        // The useEffect above will now automatically catch this and navigate!
     }, []);
 
     const handleLogout = useCallback(() => {
@@ -120,28 +119,15 @@ const Layout = () => {
     const createStudentUser = useCallback(async (payload) => {
         setIsLoading(true);
         try {
-            console.log("--- DEBUG: Student aanmaken gestart ---");
-            console.log("Payload naar backend:", payload);
-
             const res = await api.createStudentUser(payload);
-
-            console.log("Antwoord van backend na aanmaken:", res);
             const newStudent = res.data || res;
-
-            if (!newStudent.coordinator_id) {
-                console.warn("WAARSCHUWING: De nieuwe student heeft geen 'coordinator_id'. " +
-                    "De kans is groot dat deze student na het uitloggen niet meer zichtbaar is.");
-            }
-
             setAppData(prev => ({
                 ...prev,
                 allStudents: Array.isArray(prev.allStudents) ? [...prev.allStudents, newStudent] : [newStudent]
             }));
-
-            console.log("--- DEBUG: Student succesvol toegevoegd aan state ---");
             return res;
         } catch (error) {
-            console.error("DEBUG: Fout bij aanmaken student:", error);
+            console.error("Fout bij aanmaken student:", error);
             throw error;
         } finally {
             setIsLoading(false);
@@ -154,18 +140,44 @@ const Layout = () => {
         navigate('/dashboard/bedrijf');
     }, [navigate]);
 
+    // --- RESTORED DELETE & UPDATE FUNCTIONS ---
+    const deleteVacancy = useCallback(async (id) => {
+        try {
+            await api.deleteVacancy(id);
+            setAppData(prev => ({
+                ...prev,
+                vacancies: prev.vacancies.filter(v => v.id !== id)
+            }));
+        } catch (error) {
+            console.error("Fout bij verwijderen vacature:", error);
+            alert("Er is iets misgegaan bij het verwijderen van de vacature.");
+        }
+    }, []);
+
+    const updateVacancy = useCallback(async (id, data) => {
+        try {
+            const res = await api.updateVacancy(id, data);
+            setAppData(prev => ({
+                ...prev,
+                vacancies: prev.vacancies.map(v => v.id === id ? (res.data || res) : v)
+            }));
+            navigate('/dashboard/bedrijf');
+        } catch (error) {
+            console.error("Fout bij updaten vacature:", error);
+            alert("Er is iets misgegaan bij het opslaan van de wijzigingen.");
+        }
+    }, [navigate]);
+
     const syncStudentTags = useCallback(async (tags) => {
         await api.syncStudentTags(tags);
         const {data} = await api.getStudentProfile();
         setAppData(prev => ({...prev, studentProfile: data}));
     }, []);
 
-    //////// LEERDOELEN OPSLAAN IN CONTEXT//////
+    //////// TOAST & LEERDOELEN ////////
     const showToast = useCallback((message) => {
         if (toastTimeoutRef.current) return;
-
         setToastMessage(message);
-
         toastTimeoutRef.current = setTimeout(() => {
             setToastMessage(null);
             toastTimeoutRef.current = null;
@@ -176,8 +188,7 @@ const Layout = () => {
         setAppData(prev => {
             const existingGoals = prev.learningGoals || [];
             const vacancyIndex = existingGoals.findIndex(g => g.vacancy.id === vacancy.id);
-
-            let updatedGoals; // We create a variable to hold the new array
+            let updatedGoals;
 
             if (vacancyIndex >= 0) {
                 updatedGoals = [...existingGoals];
@@ -189,22 +200,15 @@ const Layout = () => {
                 updatedGoals = [...existingGoals, {vacancy, skills: [skill]}];
             }
 
-            // === THE NEW LINE ===
-            // Save the updated array directly to the browser's local storage
             localStorage.setItem('learningGoals', JSON.stringify(updatedGoals));
-
-            // Return the updated state to React
             return {...prev, learningGoals: updatedGoals};
         });
         showToast(`Leerdoel '${skill.name}' opgeslagen!`);
     }, [showToast]);
 
-    //////// LEERDOEL VERWIJDEREN ////////
     const removeLearningGoal = useCallback((vacancyId, skillId) => {
         setAppData(prev => {
             const existingGoals = prev.learningGoals || [];
-
-            // Filter out the specific skill, and then filter out any vacancies that have 0 skills left
             const updatedGoals = existingGoals.map(goal => {
                 if (goal.vacancy.id === vacancyId) {
                     return {
@@ -213,23 +217,12 @@ const Layout = () => {
                     };
                 }
                 return goal;
-            }).filter(goal => goal.skills.length > 0); // Removes the whole block if empty
+            }).filter(goal => goal.skills.length > 0);
 
-            // Update local storage so the deletion is permanent
             localStorage.setItem('learningGoals', JSON.stringify(updatedGoals));
-
             return {...prev, learningGoals: updatedGoals};
         });
     }, []);
-
-    async function handleCreateStudent(payload) {
-        const newUser = await api.createStudentUser(payload);
-        setAppData(prev => ({
-            ...prev,
-            allStudents: [...(Array.isArray(prev.allStudents) ? prev.allStudents : []), newUser.data]
-        }));
-        return newUser;
-    }
 
     const contextValue = {
         user, isAuthenticated, isLoading,
@@ -244,9 +237,10 @@ const Layout = () => {
         saveLearningGoal,
         removeLearningGoal,
         addVacancy,
+        updateVacancy,
+        deleteVacancy,
         syncStudentTags
     };
-
 
     return (
         <AppContext.Provider value={contextValue}>
@@ -256,7 +250,7 @@ const Layout = () => {
     );
 };
 
-// Router remains exactly the same as your original file
+// Router
 function App() {
     const router = createBrowserRouter([{
         element: <Layout/>,
@@ -273,9 +267,7 @@ function App() {
             {path: "/vacatures", element: <VacancyListings/>},
             {path: "/vacature/nieuw", element: <CreateVacancy/>},
             {path: "/vacature/bewerken/:id", element: <CreateVacancy/>},
-            // For the Company (Defaults to role="company")
             {path: "/vacature/:id/kandidaten", element: <StudentApplications/>},
-            // For the Coordinator
             {path: "/coordinator/student/:id", element: <StudentApplications role="coordinator"/>},
             {path: "/create/student", element: <CreateStudent/>},
             {path: "/matches", element: <MatchesDetails/>},
