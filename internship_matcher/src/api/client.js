@@ -1,22 +1,13 @@
-// --- API Client ---
-// This file is responsible for all communication with the backend API.
+const BASE_URL = 'https://back-end-main-2fian7.laravel.cloud/api/v2';
+const API_KEY = '90a19e8f34c6b476b8bbbf38714dc9c8f9c5b8761896dac2bab385139cf54322';
 
-const BASE_URL = 'https://back-end-main-2fian7.laravel.cloud/api/v1';
-
-/**
- * A wrapper for the fetch API that handles JWT authentication,
- * content types, and automatic token refreshing.
- * @param {string} path The API path (e.g., '/auth/login')
- * @param {object} options Options for the fetch request (method, body, etc.)
- * @returns {Promise<any>} The parsed JSON response data
- * @throws {Error} Throws an error if the request fails after all retries.
- */
 export const apiRequest = async (path, options = {}) => {
-    let token = localStorage.getItem('token');
+    const token = localStorage.getItem('token');
 
     const headers = {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
+        'X-API-KEY': API_KEY,
         ...(options.headers || {}),
     };
 
@@ -27,51 +18,39 @@ export const apiRequest = async (path, options = {}) => {
     let response = await fetch(`${BASE_URL}${path}`, {...options, headers});
 
     if (response.status === 401 && token) {
-        console.log("Token expired or invalid, attempting to refresh...");
         try {
             const refreshResponse = await fetch(`${BASE_URL}/auth/refresh`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
+                    'Accept': 'application/json',
+                    'X-API-KEY': API_KEY, // Cruciaal: ook hier de key meesturen
+                    'Authorization': `Bearer ${token}`,
                 },
             });
 
-            if (!refreshResponse.ok) {
-                throw new Error('Session expired. Please log in again.');
-            }
+            if (!refreshResponse.ok) throw new Error('Refresh failed');
 
             const {token: newToken} = await refreshResponse.json();
             localStorage.setItem('token', newToken);
-            console.log("Token refreshed successfully.");
 
-            // Retry the original request with the new token
+            // Retry met nieuwe token
             headers.Authorization = `Bearer ${newToken}`;
             response = await fetch(`${BASE_URL}${path}`, {...options, headers});
-
         } catch (error) {
-            console.error("Failed to refresh token:", error.message);
             localStorage.removeItem('token');
             window.location.href = '/login';
             throw error;
         }
     }
-
+    
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({message: response.statusText}));
-        const errorMessage = errorData.message || 'An unknown API error occurred.';
-        console.error(`API Error on ${path}:`, errorMessage, errorData);
-        throw new Error(errorMessage);
+        throw new Error(errorData.message || 'API Error');
     }
 
-    if (response.status === 204) {
-        return null;
-    }
-
-    return response.json();
+    return response.status === 204 ? null : response.json();
 };
-
-// --- Specific API Functions ---
 
 // === Authentication ===
 export const login = (email, password) => apiRequest('/auth/login', {
@@ -138,3 +117,16 @@ export const getApplicationsForVacancy = (vacancyId) => apiRequest(`/company/vac
 
 // Function for the Coordinator: Get all applications made by a specific student
 export const getApplicationsForStudent = (studentId) => apiRequest(`/coordinator/users/${studentId}/applications`);
+
+// === Sandbox (v2) ===
+export const getSandboxVacancyDetail = (vacancyId, tags) =>
+    apiRequest(`/student/sandbox/vacancies/${vacancyId}`, {
+        method: 'POST',
+        body: JSON.stringify({tags})
+    });
+
+export const getSandboxScoreExplanation = (vacancyId, tags) =>
+    apiRequest(`/student/sandbox/vacancies/${vacancyId}/detail`, {
+        method: 'POST',
+        body: JSON.stringify({tags})
+    });
