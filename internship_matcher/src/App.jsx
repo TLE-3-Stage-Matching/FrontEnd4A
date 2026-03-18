@@ -39,6 +39,17 @@ const Layout = () => {
     const toastTimeoutRef = useRef(null);
     const navigate = useNavigate();
 
+    const showToast = useCallback((message) => {
+        if (toastTimeoutRef.current) return;
+
+        setToastMessage(message);
+
+        toastTimeoutRef.current = setTimeout(() => {
+            setToastMessage(null);
+            toastTimeoutRef.current = null;
+        }, 1000);
+    }, []);
+
     // Session Validation
     useEffect(() => {
         const validateSession = async () => {
@@ -192,6 +203,49 @@ const Layout = () => {
             alert("Er is iets misgegaan bij het opslaan van de wijzigingen.");
         }
     }, [navigate]);
+
+    const saveLearningGoal = useCallback((vacancy, skill) => {
+        setAppData(prev => {
+            const existingGoals = prev.learningGoals || [];
+            const vacancyIndex = existingGoals.findIndex(g => g.vacancy.id === vacancy.id);
+
+            let updatedGoals;
+
+            if (vacancyIndex >= 0) {
+                updatedGoals = [...existingGoals];
+                const hasSkill = updatedGoals[vacancyIndex].skills.some(s => s.id === skill.id);
+                if (!hasSkill) {
+                    updatedGoals[vacancyIndex].skills.push(skill);
+                }
+            } else {
+                updatedGoals = [...existingGoals, {vacancy, skills: [skill]}];
+            }
+
+            localStorage.setItem('learningGoals', JSON.stringify(updatedGoals));
+            return {...prev, learningGoals: updatedGoals};
+        });
+
+        showToast(`Leerdoel '${skill.name}' opgeslagen!`);
+    }, [showToast]);
+
+    const removeLearningGoal = useCallback((vacancyId, skillId) => {
+        setAppData(prev => {
+            const existingGoals = prev.learningGoals || [];
+
+            const updatedGoals = existingGoals.map(goal => {
+                if (goal.vacancy.id === vacancyId) {
+                    return {
+                        ...goal,
+                        skills: goal.skills.filter(skill => skill.id !== skillId)
+                    };
+                }
+                return goal;
+            }).filter(goal => goal.skills.length > 0);
+
+            localStorage.setItem('learningGoals', JSON.stringify(updatedGoals));
+            return {...prev, learningGoals: updatedGoals};
+        });
+    }, []);
 
     const contextValue = {
         user, isAuthenticated, isLoading,
