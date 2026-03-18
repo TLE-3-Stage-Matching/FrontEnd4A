@@ -1,0 +1,286 @@
+/* Gebruik de bestaande root variabelen */
+:root {
+    --purple-main: #7a4988;
+    --purple-soft: #9b6ba8;
+    --gold-accent: #f3d692;
+    --gold-button: #d9b37c;
+    --bg-soft: #f4eaef;
+    --white: #ffffff;
+    --text-dark: #4a4a4a;
+}
+
+.sandbox-container {
+    background-color: var(--bg-soft);
+    min-height: 100vh;
+    padding: 40px;
+    color: var(--text-dark);
+    font-family: sans-serif;
+}
+
+/* Header sectie */
+.sandbox-header {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.sandbox-back-link {
+    color: var(--purple-main);
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.9rem;
+    transition: 0.2s;
+}
+
+.sandbox-back-link:hover {
+    color: var(--purple-soft);
+}
+
+.sandbox-title-group {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.sandbox-title-group h1 {
+    color: var(--purple-main);
+    margin: 0;
+    font-size: 2rem;
+}
+
+.sandbox-badge {
+    background-color: var(--gold-accent);
+    color: #856404;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Layout Grid */
+.sandbox-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 30px;
+    align-items: start;
+}
+
+/* Algemene Card Styling (Dash-style) */
+.sandbox-card {
+    background: var(--white);
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border-top: 5px solid var(--gold-accent);
+}
+
+.sandbox-card h3 {
+    color: var(--purple-main);
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.hint {
+    font-size: 0.85rem;
+    color: #777;
+    margin-bottom: 20px;
+}
+
+/* Skill Selector (Links) */
+.skills-scroll-box {
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.skill-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.skill-row span {
+    font-weight: 500;
+}
+
+/* Toggle Switch Styling */
+.toggle-switch {
+    width: 44px;
+    height: 22px;
+    background-color: #ccc;
+    border-radius: 11px;
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.toggle-switch::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    background: white;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: 0.3s;
+}
+
+.toggle-switch.active {
+    background-color: var(--purple-main);
+}
+
+.toggle-switch.active::after {
+    left: 24px;
+}
+
+/* Resultaten Kolom (Rechts) */
+.sandbox-right-col {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.impact-header {
+    margin-bottom: 20px;
+}
+
+.company-label {
+    background: var(--bg-soft);
+    color: var(--purple-main);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* Match Cirkel */
+.score-display {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.score-circle {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    border: 8px solid; /* Kleur wordt inline bepaald via React */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: white;
+}
+
+.score-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--text-dark);
+}
+
+.score-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #888;
+}
+
+/* Progress Bar */
+.progress-container {
+    margin-top: 20px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 12px;
+    background: #eee;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    transition: width 0.5s ease-out;
+}
+
+.status-msg {
+    text-align: center;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+/* Recommendations */
+.recommendations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.recommendation-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fafafa;
+    padding: 12px 15px;
+    border-radius: 10px;
+    border-left: 4px solid var(--purple-main);
+}
+
+.rec-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.rec-name {
+    font-weight: 600;
+}
+
+.rec-type {
+    font-size: 0.75rem;
+    color: #888;
+    text-transform: italic;
+}
+
+/* Button in Dashboard Style */
+.save-goal-btn {
+    background-color: var(--purple-main);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 0.75rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: background 0.2s;
+}
+
+.save-goal-btn:hover {
+    background-color: var(--purple-soft);
+}
+
+.empty-msg {
+    text-align: center;
+    padding: 20px;
+    color: #22c55e;
+    font-weight: 600;
+}
+
+/* Scrollbar styling voor dashboard look */
+.skills-scroll-box::-webkit-scrollbar {
+    width: 6px;
+}
+
+.skills-scroll-box::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.skills-scroll-box::-webkit-scrollbar-thumb {
+    background: var(--purple-soft);
+    border-radius: 10px;
+}
