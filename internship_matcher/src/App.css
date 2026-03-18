@@ -3,7 +3,7 @@
 }
 
 button:focus, a:focus {
-    outline: 3px solid var(--purple-main, #7a4988);
+    outline: 3px solid #4f46e5;
     outline-offset: 2px;
 }
 
@@ -53,7 +53,7 @@ button:focus, a:focus {
 .role-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
-    border-color: var(--purple-main, #7a4988);
+    border-color: #4F46E5;
 }
 
 .role-card h3 {
