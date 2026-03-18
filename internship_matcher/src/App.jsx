@@ -38,6 +38,18 @@ const Layout = () => {
     });
     const navigate = useNavigate();
 
+    const showToast = useCallback((message) => {
+        if (toastTimeoutRef.current) return;
+
+        setToastMessage(message);
+
+        toastTimeoutRef.current = setTimeout(() => {
+            setToastMessage(null);
+            toastTimeoutRef.current = null;
+        }, 1000);
+    }, []);
+
+    // Session Validation
     useEffect(() => {
         const validateSession = async () => {
             const token = localStorage.getItem('token');
@@ -126,6 +138,125 @@ const Layout = () => {
         await api.syncStudentTags(tagsPayload);
         const {data: updatedProfile} = await api.getStudentProfile();
         setAppData(prev => ({...prev, studentProfile: updatedProfile}));
+    const createStudentUser = useCallback(async (payload) => {
+        setIsLoading(true);
+        try {
+            console.log("--- DEBUG: Student aanmaken gestart ---");
+            console.log("Payload naar backend:", payload);
+
+            const res = await api.createStudentUser(payload);
+
+            console.log("Antwoord van backend na aanmaken:", res);
+            const newStudent = res.data || res;
+
+            if (!newStudent.coordinator_id) {
+                console.warn("WAARSCHUWING: De nieuwe student heeft geen 'coordinator_id'. " +
+                    "De kans is groot dat deze student na het uitloggen niet meer zichtbaar is.");
+            }
+
+            setAppData(prev => ({
+                ...prev,
+                allStudents: Array.isArray(prev.allStudents) ? [...prev.allStudents, newStudent] : [newStudent]
+            }));
+
+            console.log("--- DEBUG: Student succesvol toegevoegd aan state ---");
+            return res;
+        } catch (error) {
+            console.error("DEBUG: Fout bij aanmaken student:", error);
+            throw error;
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
+    const addVacancy = useCallback(async (data) => {
+        const res = await api.createVacancy(data);
+        setAppData(prev => ({...prev, vacancies: [...(prev.vacancies || []), res.data || res]}));
+        navigate('/dashboard/bedrijf');
+    }, [navigate]);
+
+    const deleteVacancy = useCallback(async (id) => {
+        try {
+
+            await api.deleteVacancy(id);
+
+            setAppData(prev => ({
+                ...prev,
+                vacancies: prev.vacancies.filter(v => v.id !== id)
+            }));
+        } catch (error) {
+            console.error("Fout bij verwijderen vacature:", error);
+            alert("Er is iets misgegaan bij het verwijderen van de vacature.");
+        }
+    }, []);
+
+    const syncStudentTags = useCallback(async (tags) => {
+        await api.syncStudentTags(tags);
+        const {data} = await api.getStudentProfile();
+        setAppData(prev => ({...prev, studentProfile: data}));
+    }, []);
+
+
+    const updateVacancy = useCallback(async (id, data) => {
+        try {
+            // 1. Send the updated data to the Laravel backend
+            const res = await api.updateVacancy(id, data);
+
+            // 2. Update the specific vacancy in the React state so the dashboard refreshes
+            setAppData(prev => ({
+                ...prev,
+                vacancies: prev.vacancies.map(v => v.id === id ? (res.data || res) : v)
+            }));
+
+            // 3. Send the user back to the dashboard
+            navigate('/dashboard/bedrijf');
+        } catch (error) {
+            console.error("Fout bij updaten vacature:", error);
+            alert("Er is iets misgegaan bij het opslaan van de wijzigingen.");
+        }
+    }, [navigate]);
+
+    const saveLearningGoal = useCallback((vacancy, skill) => {
+        setAppData(prev => {
+            const existingGoals = prev.learningGoals || [];
+            const vacancyIndex = existingGoals.findIndex(g => g.vacancy.id === vacancy.id);
+
+            let updatedGoals;
+
+            if (vacancyIndex >= 0) {
+                updatedGoals = [...existingGoals];
+                const hasSkill = updatedGoals[vacancyIndex].skills.some(s => s.id === skill.id);
+                if (!hasSkill) {
+                    updatedGoals[vacancyIndex].skills.push(skill);
+                }
+            } else {
+                updatedGoals = [...existingGoals, {vacancy, skills: [skill]}];
+            }
+
+            localStorage.setItem('learningGoals', JSON.stringify(updatedGoals));
+            return {...prev, learningGoals: updatedGoals};
+        });
+
+        showToast(`Leerdoel '${skill.name}' opgeslagen!`);
+    }, [showToast]);
+
+    const removeLearningGoal = useCallback((vacancyId, skillId) => {
+        setAppData(prev => {
+            const existingGoals = prev.learningGoals || [];
+
+            const updatedGoals = existingGoals.map(goal => {
+                if (goal.vacancy.id === vacancyId) {
+                    return {
+                        ...goal,
+                        skills: goal.skills.filter(skill => skill.id !== skillId)
+                    };
+                }
+                return goal;
+            }).filter(goal => goal.skills.length > 0);
+
+            localStorage.setItem('learningGoals', JSON.stringify(updatedGoals));
+            return {...prev, learningGoals: updatedGoals};
+        });
     }, []);
 
     const contextValue = {
@@ -135,6 +266,18 @@ const Layout = () => {
         updateCompanyStatus: handleUpdateCompanyStatus,
         syncStudentTags: handleSyncStudentTags,
         createStudentUser: api.createStudentUser,
+        createStudentUser,
+        students: appData.allStudents || [],
+        vacancies: appData.vacancies || [],
+        tags: appData.tags || [],
+        studentProfile: appData.studentProfile,
+        learningGoals: appData.learningGoals || [],
+        saveLearningGoal,
+        removeLearningGoal,
+        addVacancy,
+        deleteVacancy,
+        updateVacancy,
+        syncStudentTags
     };
 
     return <AppContext.Provider value={contextValue}><Outlet/></AppContext.Provider>;
