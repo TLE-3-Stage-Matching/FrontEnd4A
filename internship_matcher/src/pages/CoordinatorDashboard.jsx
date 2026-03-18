@@ -59,12 +59,10 @@ const CoordinatorDashboard = () => {
     };
 
     // --- PAGINATION LOGIC ---
-    // Defensive check to ensure allCompanies is an array
     const safeAllCompanies = Array.isArray(allCompanies) ? allCompanies : [];
     const currentCompanies = safeAllCompanies.slice((companyPage - 1) * ITEMS_PER_PAGE, companyPage * ITEMS_PER_PAGE);
     const totalCompanyPages = Math.ceil(safeAllCompanies.length / ITEMS_PER_PAGE);
 
-    // Defensive check to ensure allStudents is an array
     const safeAllStudents = Array.isArray(allStudents) ? allStudents : [];
     const currentStudents = safeAllStudents.slice((studentPage - 1) * ITEMS_PER_PAGE, studentPage * ITEMS_PER_PAGE);
     const totalStudentPages = Math.ceil(safeAllStudents.length / ITEMS_PER_PAGE);
@@ -86,7 +84,6 @@ const CoordinatorDashboard = () => {
 
             {successMessage && <div role="alert" className="success-banner">{successMessage}</div>}
 
-            {/* Companies Section */}
             <div className="form-section">
                 <h2>Bedrijven Beheren ({safeAllCompanies.length})</h2>
                 <div className="management-list">
@@ -102,7 +99,6 @@ const CoordinatorDashboard = () => {
                 <Pagination currentPage={companyPage} totalPages={totalCompanyPages} onPageChange={setCompanyPage}/>
             </div>
 
-            {/* Students Section */}
             <div className="form-section">
                 <h2>Studenten Overzicht ({safeAllStudents.length})</h2>
                 <div className="management-list">
@@ -117,7 +113,6 @@ const CoordinatorDashboard = () => {
                 <Pagination currentPage={studentPage} totalPages={totalStudentPages} onPageChange={setStudentPage}/>
             </div>
 
-            {/* Create Student Form Section */}
             <div className="form-section">
                 <h2>Nieuw Student Account Aanmaken</h2>
                 <form onSubmit={handleCreateStudentSubmit}>

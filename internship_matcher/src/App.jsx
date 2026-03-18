@@ -38,7 +38,56 @@ const Layout = () => {
     });
     const navigate = useNavigate();
 
-    // Effect for Session Validation on initial app load
+    // This new function centralizes data loading and navigation
+    const loadDataAndNavigate = async (loggedInUser) => {
+        if (!loggedInUser) return;
+
+        setIsLoading(true);
+        try {
+            const [tagsRes, studentsRes] = await Promise.all([
+                api.getTags(),
+                api.getUsers('student') // Fetch all students for all roles (for live counters etc.)
+            ]);
+
+            const newAppData = {
+                tags: tagsRes.data || [],
+                allStudents: studentsRes.data || [],
+                vacancies: [],
+                studentProfile: null,
+                allCompanies: [],
+            };
+
+            if (loggedInUser.role === 'student') {
+                const {data: profile} = await api.getStudentProfile();
+                newAppData.studentProfile = profile;
+                if (profile.student_tags?.length > 0) {
+                    const vacRes = await api.getPublicVacancies();
+                    newAppData.vacancies = vacRes.data || [];
+                    navigate('/dashboard/student');
+                } else {
+                    navigate('/onboarding/student');
+                }
+            } else if (loggedInUser.role === 'company') {
+                const vacRes = await api.getCompanyVacancies();
+                newAppData.vacancies = vacRes.data || [];
+                navigate('/dashboard/bedrijf');
+            } else if (loggedInUser.role === 'coordinator') {
+                const compRes = await api.getCompanies();
+                newAppData.allCompanies = compRes.data || [];
+                navigate('/dashboard/coordinator');
+            }
+
+            setAppData(newAppData);
+        } catch (error) {
+            console.error("Failed to load dashboard data:", error);
+            // If data loading fails, maybe log out to be safe
+            handleLogout();
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Session Validation on initial app load
     useEffect(() => {
         const validateSession = async () => {
             const token = localStorage.getItem('token');
@@ -47,63 +96,29 @@ const Layout = () => {
                     const {data: userData} = await api.getMe();
                     setUser(userData);
                     setIsAuthenticated(true);
+                    // Now that we have the user, load their data and navigate
+                    await loadDataAndNavigate(userData);
                 } catch (error) {
                     localStorage.removeItem('token');
+                    setIsLoading(false);
                 }
-            }
-            setIsLoading(false);
-        };
-        validateSession();
-    }, []);
-
-    // Effect for Data Fetching and Navigation after authentication
-    useEffect(() => {
-        if (!isAuthenticated || !user) return;
-
-        const loadDashboardData = async () => {
-            setIsLoading(true);
-            try {
-                const {data: tags} = await api.getTags();
-                let newAppData = {tags, allStudents: [], allCompanies: [], vacancies: []};
-
-                if (user.role === 'student') {
-                    const {data: profile} = await api.getStudentProfile();
-                    newAppData.studentProfile = profile;
-                    if (profile.student_tags?.length > 0) {
-                        const vacRes = await api.getPublicVacancies();
-                        newAppData.vacancies = vacRes.data || [];
-                        navigate('/dashboard/student');
-                    } else {
-                        navigate('/onboarding/student');
-                    }
-                } else if (user.role === 'company') {
-                    const vacRes = await api.getCompanyVacancies();
-                    newAppData.vacancies = vacRes.data || [];
-                    navigate('/dashboard/bedrijf');
-                } else if (user.role === 'coordinator') {
-                    const [stuRes, compRes] = await Promise.all([api.getUsers('student'), api.getCompanies()]);
-                    newAppData.allStudents = stuRes.data || [];
-                    newAppData.allCompanies = compRes.data || [];
-                    navigate('/dashboard/coordinator');
-                }
-                setAppData(prev => ({...prev, ...newAppData}));
-            } catch (error) {
-                console.error("Dashboard load failed:", error);
-            } finally {
+            } else {
                 setIsLoading(false);
             }
         };
-
-        loadDashboardData();
-    }, [user, isAuthenticated, navigate]);
+        validateSession();
+    }, []); // Runs only once
 
     // --- CONTEXT HANDLERS ---
     async function handleLogin(email, password) {
         const {token} = await api.login(email, password);
         localStorage.setItem('token', token);
-        const {data} = await api.getMe();
-        setUser(data);
+        const {data: userData} = await api.getMe();
+        setUser(userData);
         setIsAuthenticated(true);
+        // Data loading and navigation is now handled by the session validation logic,
+        // but we can also trigger it here to be faster.
+        await loadDataAndNavigate(userData);
     }
 
     function handleLogout() {
@@ -130,13 +145,22 @@ const Layout = () => {
         setAppData(prev => ({...prev, studentProfile: updatedProfile}));
     }
 
+    async function handleCreateStudent(payload) {
+        const newUser = await api.createStudentUser(payload);
+        setAppData(prev => ({
+            ...prev,
+            allStudents: [...(Array.isArray(prev.allStudents) ? prev.allStudents : []), newUser.data]
+        }));
+        return newUser;
+    }
+
     const contextValue = {
         user, isAuthenticated, isLoading, ...appData,
         login: handleLogin,
         logout: handleLogout,
         updateCompanyStatus: handleUpdateCompanyStatus,
         syncStudentTags: handleSyncStudentTags,
-        createStudentUser: api.createStudentUser,
+        createStudentUser: handleCreateStudent,
     };
 
     return <AppContext.Provider value={contextValue}><Outlet/></AppContext.Provider>;
