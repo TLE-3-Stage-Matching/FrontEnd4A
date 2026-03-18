@@ -111,11 +111,21 @@ export const createStudentUser = (studentData) => apiRequest('/coordinator/users
     body: JSON.stringify(studentData),
 });
 
-// === Applications ===
+// === Student Vacancy & Matching ===
+
+export const getStudentVacancy = (vacancyId) => apiRequest(`/student/vacancies/${vacancyId}`);
+export const getStudentVacancyDetail = (vacancyId) => apiRequest(`/student/vacancies/${vacancyId}/detail`);
+
+export const applyForVacancy = (vacancyId, studentNote = "") => apiRequest('/student/match-choices', {
+    method: 'POST',
+    body: JSON.stringify({vacancy_id: vacancyId, student_note: studentNote}),
+});
+// === Applications (Match Choices in V2) ===
 // Function for the Company: Get all candidates who applied for a specific vacancy
-export const getApplicationsForVacancy = (vacancyId) => apiRequest(`/company/vacancies/${vacancyId}/applications`);
+export const getApplicationsForVacancy = (vacancyId) => apiRequest(`/company/match-choices?vacancy_id=${vacancyId}`);
 
 // Function for the Coordinator: Get all applications made by a specific student
+export const getApplicationsForStudent = (studentId) => apiRequest(`/coordinator/match-choices?student_user_id=${studentId}`);
 export const getApplicationsForStudent = (studentId) => apiRequest(`/coordinator/users/${studentId}/applications`);
 
 // === Sandbox (v2) ===

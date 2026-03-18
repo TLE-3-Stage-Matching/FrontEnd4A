@@ -80,7 +80,7 @@ const VacancyListings = () => {
                                 studentSkills={studentProfile.student_tags}
                                 vacancySkills={vacancy.vacancy_requirements}
                             />
-                            <Link to={`/vacancies/${vacancy.id}`} className="btn-primary">Bekijk Details</Link>
+                            <Link to={`/vacature/student/${vacancy.id}`} className="btn-primary">Bekijk Details</Link>
                         </div>
                     );
                 })}
