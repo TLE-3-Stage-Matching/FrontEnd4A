@@ -22,6 +22,7 @@ import StudentApplications from "./components/StudentApplications.jsx";
 import './App.css';
 import Sandbox from "./pages/Sandbox.jsx";
 import Toast from "./components/Toast.jsx";
+import MatchDetails from "./pages/MatchDetails.jsx";
 
 const Layout = () => {
     const [user, setUser] = useState(null);
@@ -273,7 +274,8 @@ function App() {
             {path: "/matches", element: <MatchesDetails/>},
             {path: "/resultaten", element: <StudentResult/>},
             {path: "/sandbox/:id", element: <Sandbox/>},
-            {path: "/vacancies/:id", element: <Sandbox/>}
+            {path: "/vacancies/:id", element: <Sandbox/>},
+            {path: "/vacature/student/:id", element: <MatchDetails/>},
         ]
     }]);
     return <RouterProvider router={router}/>;

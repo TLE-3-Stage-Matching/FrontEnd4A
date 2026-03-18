@@ -1,7 +1,8 @@
 // --- API Client ---
 // This file is responsible for all communication with the backend API.
 
-const BASE_URL = 'https://back-end-main-2fian7.laravel.cloud/api/v1';
+const BASE_URL = 'https://back-end-main-2fian7.laravel.cloud/api/v2';
+const API_KEY = '90a19e8f34c6b476b8bbbf38714dc9c8f9c5b8761896dac2bab385139cf54322';
 
 /**
  * A wrapper for the fetch API that handles JWT authentication,
@@ -17,6 +18,7 @@ export const apiRequest = async (path, options = {}) => {
     const headers = {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
+        'X-API-KEY': API_KEY,
         ...(options.headers || {}),
     };
 
@@ -132,9 +134,18 @@ export const createStudentUser = (studentData) => apiRequest('/coordinator/users
     body: JSON.stringify(studentData),
 });
 
-// === Applications ===
+// === Student Vacancy & Matching ===
+
+export const getStudentVacancy = (vacancyId) => apiRequest(`/student/vacancies/${vacancyId}`);
+export const getStudentVacancyDetail = (vacancyId) => apiRequest(`/student/vacancies/${vacancyId}/detail`);
+
+export const applyForVacancy = (vacancyId, studentNote = "") => apiRequest('/student/match-choices', {
+    method: 'POST',
+    body: JSON.stringify({vacancy_id: vacancyId, student_note: studentNote}),
+});
+// === Applications (Match Choices in V2) ===
 // Function for the Company: Get all candidates who applied for a specific vacancy
-export const getApplicationsForVacancy = (vacancyId) => apiRequest(`/company/vacancies/${vacancyId}/applications`);
+export const getApplicationsForVacancy = (vacancyId) => apiRequest(`/company/match-choices?vacancy_id=${vacancyId}`);
 
 // Function for the Coordinator: Get all applications made by a specific student
-export const getApplicationsForStudent = (studentId) => apiRequest(`/coordinator/users/${studentId}/applications`);
+export const getApplicationsForStudent = (studentId) => apiRequest(`/coordinator/match-choices?student_user_id=${studentId}`);

@@ -1,21 +1,17 @@
 import React, {useState, useEffect} from "react";
 import {Link, useParams} from "react-router-dom";
-import * as api from '../api/client.js'; // Import your API functions
+import * as api from '../api/client.js';
 
 const StudentApplications = ({role = 'company'}) => {
-    // 1. Grab the ID from the URL (e.g., /vacature/2/kandidaten -> id is 2)
     const {id} = useParams();
 
-    // 2. State to hold the data from the server
     const [applications, setApplications] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // State for the Rejection Feedback Modal
     const [rejectingApp, setRejectingApp] = useState(null);
     const [rejectReason, setRejectReason] = useState("");
 
-    // 3. Fetch data from the server when the component loads
     useEffect(() => {
         const fetchApplications = async () => {
             setIsLoading(true);
@@ -24,47 +20,39 @@ const StudentApplications = ({role = 'company'}) => {
             try {
                 let response;
 
-                // If a company is looking, fetch based on vacancy ID
                 if (role === 'company') {
                     response = await api.getApplicationsForVacancy(id);
-                }
-                // If a coordinator is looking, fetch based on student ID
-                else if (role === 'coordinator') {
+                } else if (role === 'coordinator') {
                     response = await api.getApplicationsForStudent(id);
                 }
 
-                // Save the server data into our state
-                // (Using response.data handles standard Laravel JSON wrappers)
                 setApplications(response.data || response);
 
             } catch (err) {
                 console.error("Error fetching data:", err);
                 setError("Kon de sollicitaties niet ophalen van de server.");
             } finally {
-                setIsLoading(false); // Stop the loading spinner
+                setIsLoading(false);
             }
         };
 
         if (id) {
             fetchApplications();
         }
-    }, [id, role]); // Rerun if ID or role changes
+    }, [id, role]);
 
-    // --- ACTION HANDLERS ---
     const handleInvite = (studentName, vacancyTitle) => {
         alert(`${studentName} is uitgenodigd voor de rol: ${vacancyTitle}!`);
-        // LATER: Send a POST request to the server to update the application status
     };
 
     const handleConfirmReject = () => {
         alert("Kandidaat afgewezen. Feedback is opgeslagen.");
-        // Remove from screen locally for now
-        setApplications(applications.filter(app => app.application_id !== rejectingApp.application_id));
+        // CHANGED: Use app.id instead of app.application_id
+        setApplications(applications.filter(app => app.id !== rejectingApp.id));
         setRejectingApp(null);
         setRejectReason("");
     };
 
-    // --- CONDITIONAL RENDERING ---
     if (isLoading) {
         return <div style={{textAlign: 'center', padding: '50px', fontSize: '18px'}}>Data aan het laden...</div>;
     }
@@ -97,8 +85,6 @@ const StudentApplications = ({role = 'company'}) => {
                 </Link>
             )}
 
-
-            {/* Dynamic Titles */}
             <h2>{role === 'coordinator' ? "Stage Overzicht Student" : "Inkomende Sollicitaties"}</h2>
             <p>
                 {role === 'coordinator'
@@ -114,22 +100,24 @@ const StudentApplications = ({role = 'company'}) => {
             }}>
                 {applications.map(app => {
                     const student = app.student;
-                    const profile = student.student_profile;
-                    const prefs = student.student_preferences;
+                    // Safety fallbacks in case profile/prefs are missing
+                    const profile = student?.student_profile || {};
+                    const prefs = student?.student_preferences || {};
 
                     const displayName = profile.exclude_demographics
                         ? "Anonieme Kandidaat"
                         : `${student.first_name} ${student.last_name}`;
 
-                    const matchColor = app.match_percentage >= 70 ? "#729933" : "#e9bf5d";
+                    // CHANGED: Grab match_score from the v2 match_result object
+                    const matchScore = app.match_result?.match_score || 0;
+                    const matchColor = matchScore >= 70 ? "#729933" : "#e9bf5d";
 
                     return (
-                        <article key={app.application_id} style={{
+                        <article key={app.id} style={{ // CHANGED: app.id instead of application_id
                             border: '1px solid #E5E7EB', borderRadius: '12px', padding: '20px',
                             backgroundColor: 'white', display: 'flex', flexDirection: 'column',
                             boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                         }}>
-                            {/* --- HEADER: Vacancy & Match --- */}
                             <div style={{
                                 display: 'flex',
                                 justifyContent: 'space-between',
@@ -140,7 +128,10 @@ const StudentApplications = ({role = 'company'}) => {
                             }}>
                                 <div>
                                     <span style={{fontSize: '12px', color: '#6B7280', fontWeight: 'bold'}}>GESOLLICITEERD VOOR</span>
-                                    <h4 style={{margin: '4px 0 0 0', color: '#111827'}}>{app.vacancy.title}</h4>
+                                    <h4 style={{
+                                        margin: '4px 0 0 0',
+                                        color: '#111827'
+                                    }}>{app.vacancy?.title || 'Onbekende Vacature'}</h4>
                                 </div>
                                 <div style={{
                                     backgroundColor: matchColor,
@@ -150,18 +141,25 @@ const StudentApplications = ({role = 'company'}) => {
                                     fontWeight: 'bold',
                                     fontSize: '14px'
                                 }}>
-                                    {app.match_percentage}% Match
+                                    {matchScore}% Match
                                 </div>
                             </div>
 
-                            {/* --- STUDENT INTRO --- */}
-                            <h3 style={{margin: '0 0 4px 0', color: '#1F2937'}}>{profile.headline}</h3>
+                            <h3 style={{margin: '0 0 4px 0', color: '#1F2937'}}>{profile.headline || 'Student'}</h3>
                             <p style={{fontWeight: '600', color: '#4B5563', margin: '0 0 8px 0', fontSize: '14px'}}>
-                                {displayName} • {profile.city}
+                                {displayName} {profile.city ? `• ${profile.city}` : ''}
                             </p>
-                            <p style={{color: '#374151', fontSize: '14px', marginBottom: '15px', fontStyle: 'italic'}}>
-                                "{profile.bio}"
-                            </p>
+
+                            {profile.bio && (
+                                <p style={{
+                                    color: '#374151',
+                                    fontSize: '14px',
+                                    marginBottom: '15px',
+                                    fontStyle: 'italic'
+                                }}>
+                                    "{profile.bio}"
+                                </p>
+                            )}
 
                             <div style={{
                                 display: 'grid',
@@ -169,7 +167,6 @@ const StudentApplications = ({role = 'company'}) => {
                                 gap: '15px',
                                 marginBottom: '15px'
                             }}>
-                                {/* --- SKILLS --- */}
                                 <div>
                                     <h5 style={{
                                         margin: '0 0 6px 0',
@@ -178,7 +175,7 @@ const StudentApplications = ({role = 'company'}) => {
                                         textTransform: 'uppercase'
                                     }}>Vaardigheden</h5>
                                     <div style={{display: 'flex', flexWrap: 'wrap', gap: '4px'}}>
-                                        {student.student_tags.map((st, i) => (
+                                        {student.student_tags?.map((st, i) => (
                                             <span key={i} style={{
                                                 backgroundColor: '#EFF6FF',
                                                 color: '#1E40AF',
@@ -192,7 +189,6 @@ const StudentApplications = ({role = 'company'}) => {
                                     </div>
                                 </div>
 
-                                {/* --- LANGUAGES --- */}
                                 <div>
                                     <h5 style={{
                                         margin: '0 0 6px 0',
@@ -201,7 +197,7 @@ const StudentApplications = ({role = 'company'}) => {
                                         textTransform: 'uppercase'
                                     }}>Talen</h5>
                                     <ul style={{margin: 0, paddingLeft: '15px', fontSize: '12px', color: '#4B5563'}}>
-                                        {student.student_languages.map((lang, i) => (
+                                        {student.student_languages?.map((lang, i) => (
                                             <li key={i}>
                                                 <strong>{lang.language.name}</strong> ({lang.language_level.name})</li>
                                         ))}
@@ -209,7 +205,6 @@ const StudentApplications = ({role = 'company'}) => {
                                 </div>
                             </div>
 
-                            {/* --- AVAILABILITY --- */}
                             <div style={{
                                 backgroundColor: '#F9FAFB',
                                 padding: '10px',
@@ -218,44 +213,44 @@ const StudentApplications = ({role = 'company'}) => {
                                 fontSize: '13px',
                                 color: '#374151'
                             }}>
-                                <strong>Beschikbaarheid:</strong> {prefs.hours_per_week_min} - {prefs.hours_per_week_max} uur/week <br/>
+                                <strong>Beschikbaarheid:</strong> {prefs.hours_per_week_min || '-'} - {prefs.hours_per_week_max || '-'} uur/week <br/>
                                 <strong>Rijbewijs:</strong> {prefs.has_drivers_license ? "Ja" : "Nee"}
                             </div>
 
-                            {/* --- WORK EXPERIENCE --- */}
-                            <div style={{marginBottom: '20px'}}>
-                                <h5 style={{
-                                    margin: '0 0 8px 0',
-                                    color: '#111827',
-                                    fontSize: '12px',
-                                    textTransform: 'uppercase'
-                                }}>Relevante Ervaring</h5>
-                                {student.student_experiences.map(exp => (
-                                    <div key={exp.id} style={{
-                                        marginBottom: '10px',
-                                        paddingLeft: '10px',
-                                        borderLeft: '3px solid #E5E7EB'
-                                    }}>
-                                        <div style={{
-                                            fontSize: '13px',
-                                            fontWeight: 'bold',
-                                            color: '#1F2937'
-                                        }}>{exp.title} bij {exp.company_name}</div>
-                                        <div style={{
-                                            fontSize: '11px',
-                                            color: '#6B7280',
-                                            marginBottom: '4px'
-                                        }}>{exp.start_date} t/m {exp.end_date}</div>
-                                        <div style={{fontSize: '13px', color: '#4B5563'}}>{exp.description}</div>
-                                    </div>
-                                ))}
-                            </div>
+                            {student.student_experiences?.length > 0 && (
+                                <div style={{marginBottom: '20px'}}>
+                                    <h5 style={{
+                                        margin: '0 0 8px 0',
+                                        color: '#111827',
+                                        fontSize: '12px',
+                                        textTransform: 'uppercase'
+                                    }}>Relevante Ervaring</h5>
+                                    {student.student_experiences.map(exp => (
+                                        <div key={exp.id} style={{
+                                            marginBottom: '10px',
+                                            paddingLeft: '10px',
+                                            borderLeft: '3px solid #E5E7EB'
+                                        }}>
+                                            <div style={{
+                                                fontSize: '13px',
+                                                fontWeight: 'bold',
+                                                color: '#1F2937'
+                                            }}>{exp.title} bij {exp.company_name}</div>
+                                            <div style={{
+                                                fontSize: '11px',
+                                                color: '#6B7280',
+                                                marginBottom: '4px'
+                                            }}>{exp.start_date} t/m {exp.end_date || 'Heden'}</div>
+                                            <div style={{fontSize: '13px', color: '#4B5563'}}>{exp.description}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
 
-                            {/* --- ACTION BUTTONS (Dynamic by Role) --- */}
                             <div style={{display: 'flex', gap: '10px', marginTop: 'auto'}}>
                                 {role === 'company' ? (
                                     <>
-                                        <button onClick={() => handleInvite(displayName, app.vacancy.title)} style={{
+                                        <button onClick={() => handleInvite(displayName, app.vacancy?.title)} style={{
                                             flex: 1,
                                             padding: '10px',
                                             backgroundColor: '#9a5b86',
@@ -314,7 +309,6 @@ const StudentApplications = ({role = 'company'}) => {
                 })}
             </div>
 
-            {/* Rejection Modal */}
             {rejectingApp && (
                 <div style={{
                     position: "fixed",
@@ -336,9 +330,8 @@ const StudentApplications = ({role = 'company'}) => {
                         maxWidth: "400px"
                     }}>
                         <h3 style={{marginTop: 0}}>{role === 'company' ? 'Kandidaat Afwijzen' : 'Stage Afkeuren'}</h3>
-                        <p style={{fontSize: "14px", color: "#4B5563"}}>
-                            Geef een reden op. Dit helpt de student in hun leerproces.
-                        </p>
+                        <p style={{fontSize: "14px", color: "#4B5563"}}>Geef een reden op. Dit helpt de student in hun
+                            leerproces.</p>
                         <textarea
                             value={rejectReason}
                             onChange={(e) => setRejectReason(e.target.value)}
@@ -387,4 +380,5 @@ const StudentApplications = ({role = 'company'}) => {
         </div>
     );
 };
+
 export default StudentApplications;
