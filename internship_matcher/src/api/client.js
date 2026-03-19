@@ -1,5 +1,5 @@
 const BASE_URL = 'https://back-end-main-2fian7.laravel.cloud/api/v2';
-const API_KEY = '90a19e8f34c6b476b8bbbf38714dc9c8f9c5b8761896dac2bab385139cf54322';
+const API_KEY = '65a6c3e055ce3a1aba75cf2ea46dc202edd7b0a475b898914c2df0b256043d9f';
 
 export const apiRequest = async (path, options = {}) => {
     const token = localStorage.getItem('token');
