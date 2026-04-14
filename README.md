@@ -1,65 +1,47 @@
-KLIK - Internship Matcher platform
+# KLIK - Internship Matcher platform
 
-KLIK is een innovatief stagematching platform dat ontworpen is om de kloof tussen studenten en het bedrijfsleven te dichten. Door middel van een transparant algoritme en een focus op talenten, helpt KLIK studenten niet alleen bij het vinden van een stage, maar ook bij hun persoonlijke ontwikkeling.
-🚀 Over het Project
+KLIK is een innovatief stagematching platform dat ontworpen is om de kloof tussen studenten en het bedrijfsleven te dichten. In plaats van een ondoorzichtig algoritme, geeft KLIK studenten de regie over hun eigen matchingsproces en persoonlijke ontwikkeling.
+
+## Over het Project
 
 In KLIK worden drie kerngebruikers ondersteund:
+* **Stagecoördinatoren:** Verantwoordelijk voor het beheer van de instroom en het aanmaken van accounts voor studenten.
+* **Studenten:** Personaliseren hun profiel op basis van hun unieke talenten en eigenschappen.
+* **Bedrijven:** Plaatsen vacatures om de ideale match te vinden op basis van cultuur en skills.
 
-    Stagecoördinatoren: Maken accounts aan voor studenten en beheren het overzicht.
+### De Sandbox Functie
+Een uniek onderdeel van het platform is de Sandbox. Hier kunnen studenten experimenteren met de variabelen van het matching-algoritme. Dit geeft hen direct inzicht in waarom ze wel of niet matchen met bepaalde vacatures. Op basis van deze data kunnen studenten gerichte doelen voor zichzelf stellen om hun kansen op de arbeidsmarkt te vergroten.
 
-    Studenten: Personaliseren hun profiel op basis van talenten en eigenschappen.
+## Technologie Stack
 
-    Bedrijven: Plaatsen vacatures om de ideale match te vinden.
+De applicatie is gebouwd met de volgende technologieën:
+* React 19 (Frontend framework)
+* Vite (Build tool)
+* React Router 7 (Routing)
+* ESLint (Code kwaliteit)
 
-Unieke Functie: De Sandbox
+## Installatie en Gebruik
 
-KLIK onderscheidt zich door de Sandbox-functie. Studenten kunnen hier experimenteren met de variabelen van het matching-algoritme. Dit geeft hen direct inzicht in waarom ze wel of niet matchen met bepaalde vacatures, waardoor ze gericht aan hun leerdoelen kunnen werken.
-🛠️ Technologie Stack
+Volg deze stappen om het project lokaal op te zetten:
 
-Dit project is gebouwd met een moderne frontend-stack:
+1. Clone de repository naar je lokale machine.
+2. Installeer de afhankelijkheden:
+   npm install
 
-    React 19: Voor een reactieve en component-gebaseerde UI.
+3. Start de development server:
+   npm run dev
 
-    Vite: Als razendsnelle build-tool en dev-server.
+4. Open de applicatie in de browser op http://localhost:5173
 
-    React Router 7: Voor geavanceerde routing binnen de applicatie.
+## Beschikbare Scripts
 
+In de projectmap kun je de volgende commando's uitvoeren:
 
-Aan de slag
+* npm run dev - Start de applicatie in de ontwikkelomgeving.
+* npm run build - Bundelt de applicatie voor productie in de 'dist' map.
+* npm run lint - Controleert de code op stijlfouten.
+* npm run preview - Bekijk de lokaal gebouwde productie-versie.
 
-Volg deze stappen om het project lokaal te draaien:
-1. Installatie
+## Project Status
 
-Kloon de repository en installeer de benodigde dependencies:
-Bash
-
-npm install
-
-2. Development mode
-
-Start de lokale ontwikkelserver:
-Bash
-
-npm run dev
-
-De applicatie is nu bereikbaar via de URL die in je terminal verschijnt (meestal http://localhost:5173).
-3. Build voor productie
-
-Wil je de applicatie compileren voor live-gang? Gebruik dan:
-Bash
-
-  npm run build
-
-Projectstructuur
-
-Op basis van de configuratie gebruikt dit project:
-
-    ES Modules: Voor een moderne JavaScript-ervaring ("type": "module").
-
-Toekomstige Functies
-
-    [ ] Integratie van AI-gestuurde feedback in de Sandbox.
-
-    [ ] Chatfunctionaliteit tussen student en bedrijf.
-
-    [ ] Uitgebreid dashboard voor stagecoördinatoren.
+Dit project staat online op http://145.24.237.137:8001/
