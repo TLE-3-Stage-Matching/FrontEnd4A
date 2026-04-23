@@ -1,47 +1,55 @@
-# KLIK - Internship Matcher platform
+# KLIK - Internship Matcher Platform
 
-KLIK is een innovatief stagematching platform dat ontworpen is om de kloof tussen studenten en het bedrijfsleven te dichten. In plaats van een ondoorzichtig algoritme, geeft KLIK studenten de regie over hun eigen matchingsproces en persoonlijke ontwikkeling.
+KLIK is an innovative internship matching platform designed to bridge the gap between students and the professional world. Instead of an vague algorithm, KLIK gives students control over their own matching process and personal development.
 
-## Over het Project
+## About the Project
 
-In KLIK worden drie kerngebruikers ondersteund:
-* **Stagecoördinatoren:** Verantwoordelijk voor het beheer van de instroom en het aanmaken van accounts voor studenten.
-* **Studenten:** Personaliseren hun profiel op basis van hun unieke talenten en eigenschappen.
-* **Bedrijven:** Plaatsen vacatures om de ideale match te vinden op basis van cultuur en skills.
+KLIK supports three core users:
+* **Internship Coordinators:** Responsible for managing incoming students and creating student accounts.
+* **Students:** Personalize their profiles based on their unique talents and characteristics.
+* **Companies:** Post job openings to find the ideal match based on culture and skills.
 
-### De Sandbox Functie
-Een uniek onderdeel van het platform is de Sandbox. Hier kunnen studenten experimenteren met de variabelen van het matching-algoritme. Dit geeft hen direct inzicht in waarom ze wel of niet matchen met bepaalde vacatures. Op basis van deze data kunnen studenten gerichte doelen voor zichzelf stellen om hun kansen op de arbeidsmarkt te vergroten.
+### The Sandbox Feature
+A unique part of the platform is the Sandbox. Here, students can experiment with the variables of the matching algorithm. This gives them direct insight into why they do or do not match with certain job openings. Based on this data, students can set targeted goals to improve their chances in the job market.
 
-## Technologie Stack
+## Technology Stack
 
-De applicatie is gebouwd met de volgende technologieën:
+The application is built with the following technologies:
 * React 19 (Frontend framework)
 * Vite (Build tool)
 * React Router 7 (Routing)
-* ESLint (Code kwaliteit)
+* ESLint (Code quality)
 
-## Installatie en Gebruik
+## Installation and Usage
 
-Volg deze stappen om het project lokaal op te zetten:
+Follow these steps to set up the project locally:
 
-1. Clone de repository naar je lokale machine.
-2. Installeer de afhankelijkheden:
+1. Clone the repository to your local machine.
+2. Install the dependencies:
    npm install
 
-3. Start de development server:
+3. Start the development server:
    npm run dev
 
-4. Open de applicatie in de browser op http://localhost:5173
+4. Create an .env file, copy the contents of .env.example and refer to the back-end documentation to get your api-url and api-key which can be found at https://internship-matching-api-main-svt6qy.laravel.cloud/
 
-## Beschikbare Scripts
+5. Open the application in your browser at http://localhost:5173
 
-In de projectmap kun je de volgende commando's uitvoeren:
+## Available Scripts
 
-* npm run dev - Start de applicatie in de ontwikkelomgeving.
-* npm run build - Bundelt de applicatie voor productie in de 'dist' map.
-* npm run lint - Controleert de code op stijlfouten.
-* npm run preview - Bekijk de lokaal gebouwde productie-versie.
+In the project directory, you can run the following commands:
+
+* npm run dev - Starts the application in development mode.
+* npm run build - Bundles the application for production in the 'dist' folder.
+* npm run lint - Checks the code for style issues.
+* npm run preview - Preview the locally built production version.
+
+## Recommendations for improvement and additions
+
+* Some pages need more styling
+* User feedback on the student-skills is lackluster
+* Navigation could be made more concise
 
 ## Project Status
 
-Dit project staat online op http://145.24.237.137:8001/
+This project is live at http://145.24.237.137:8001/
